@@ -1,0 +1,38 @@
+# docker-compose.yml
+# 用於啟動線上測驗系統所需的 PostgreSQL 資料庫
+services:
+  # 定義 PostgreSQL 服務
+  postgres:
+    # 使用官方的 PostgreSQL 13 Alpine 映像檔，它比較輕量
+    image: postgres:13-alpine
+    # 為容器指定一個好記的名稱
+    container_name: exam_db
+    # 設定環境變數，用於初始化資料庫
+    environment:
+      # 設定 PostgreSQL 的username和password以及要建立的資料庫名稱
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # 將容器的 5432 連接埠映射到主機的 5432 連接埠
+    # 這樣您的 Flask 應用程式才能透過 localhost:5432 連接到資料庫
+    ports:
+      - "5432:5432"
+    # 掛載一個 volume 來持久化資料庫資料
+    # 這樣即使容器被刪除或重建，您的資料也不會遺失
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # 設定容器的重啟策略，'always' 表示容器總是在退出時自動重啟
+    restart: always
+  
+  # 我們的 Flask 後端應用程式
+  # (未來您會在這裡定義 backend 服務，我們先把 volume 準備好)
+  # backend:
+  #   build: ./backend
+  #   volumes:
+  #     - uploads_data:/app/static/uploads
+
+# 定義 Docker volumes
+volumes:
+  postgres_data: {}
+  # *** 新增 ***: 為上傳的檔案建立一個 volume
+  uploads_data: {}
