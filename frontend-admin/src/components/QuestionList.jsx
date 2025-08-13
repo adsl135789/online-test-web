@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE_URL = 'http://54.174.181.192';
+
 const SYMBOL_MAP = { 'S': '⬛', 'T': '🔺', 'C': '🟢' };
 
 function formatAnswer(answerStr) {
@@ -38,7 +40,7 @@ export default function QuestionList({ setPage, setEditingId }) {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/admin/questions');
+      const response = await axios.get(`${API_BASE_URL}:5000/api/admin/questions`);
       setQuestions(response.data);
       setError(null);
     } catch (err) {
@@ -54,7 +56,7 @@ export default function QuestionList({ setPage, setEditingId }) {
   const handleDelete = async (id) => {
     if (window.confirm(`您確定要刪除問題 #${id} 嗎？此操作無法復原。`)) {
       try {
-        await axios.delete(`http://localhost:5000/api/admin/questions/${id}`);
+        await axios.delete(`${API_BASE_URL}:5000/api/admin/questions/${id}`);
         fetchQuestions();
       } catch (err) {
         alert('刪除失敗，請查看主控台錯誤訊息。');
@@ -98,7 +100,7 @@ export default function QuestionList({ setPage, setEditingId }) {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/admin/questions/batch-toggle', {
+      await axios.post(`${API_BASE_URL}:5000/api/admin/questions/batch-toggle`, {
         question_ids: Array.from(selectedQuestions),
         is_active: isActive
       });
@@ -114,7 +116,7 @@ export default function QuestionList({ setPage, setEditingId }) {
 
   const handleSingleToggle = async (id, currentStatus) => {
     try {
-      await axios.post(`http://localhost:5000/api/admin/questions/${id}/toggle`);
+      await axios.post(`${API_BASE_URL}:5000/api/admin/questions/${id}/toggle`);
       fetchQuestions();
     } catch (err) {
       alert('操作失敗');
@@ -229,7 +231,7 @@ export default function QuestionList({ setPage, setEditingId }) {
               {/* 圖片 */}
               <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-beige overflow-hidden">
                 <img 
-                  src={`http://localhost:5000/static/${q.image_path}`} 
+                  src={`${API_BASE_URL}:5000/static/${q.image_path}`} 
                   alt={`問題 ${q.id} 的圖片`} 
                   className="max-w-full max-h-full object-contain" 
                 />

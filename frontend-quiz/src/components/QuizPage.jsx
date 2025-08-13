@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 
+const API_BASE_URL = 'http://54.174.181.192';
+
 // 符號對應表
 const SYMBOL_MAP = { 'S': '⬛', 'T': '🔺', 'C': '🟢' };
 
@@ -67,7 +69,7 @@ export default function QuizPage({ sessionData }) {
       const direction = sessionData.question_order[currentQuestionIndex];
       
       try {
-        const response = await axios.get(`http://localhost:5000/api/quiz/${sessionData.session_id}/question/${direction}`);
+        const response = await axios.get(`${API_BASE_URL}:5000/api/quiz/${sessionData.session_id}/question/${direction}`);
         setQuestionData(response.data);
         setError(null);
       } catch (err) {
@@ -102,7 +104,7 @@ export default function QuizPage({ sessionData }) {
     setIsSubmitted(true);
     
     try {
-      const response = await axios.post(`http://localhost:5000/api/quiz/${sessionData.session_id}/answer`, {
+      const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/${sessionData.session_id}/answer`, {
         direction: sessionData.question_order[currentQuestionIndex],
         answer: selectedAnswer,
         time_ms: time,
@@ -164,7 +166,7 @@ export default function QuizPage({ sessionData }) {
             {/* 左側：題目圖片 */}
             <div className="flex-shrink-0">
               <img 
-                src={`http://localhost:5000/static/${questionData.image_path}`} 
+                src={`${API_BASE_URL}:5000/static/${questionData.image_path}`} 
                 alt="測驗圖片" 
                 className="max-w-full md:max-w-lg mx-auto rounded-lg border-2 border-beige" 
               />

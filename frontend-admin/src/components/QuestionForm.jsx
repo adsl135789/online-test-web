@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
+const API_BASE_URL = 'http://54.174.181.192';
+
 // --- 常數定義 ---
 const STAGE_1_CHOICES = [
   { value: 'S,T,C', label: '⬛ 🔺 🟢' }, { value: 'S,C,T', label: '⬛ 🟢 🔺' },
@@ -47,7 +49,7 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
       const fetchQuestionData = async () => {
         setStatus({ loading: true, error: null, success: null });
         try {
-          const response = await axios.get(`http://localhost:5000/api/admin/questions/${editingId}`);
+          const response = await axios.get(`${API_BASE_URL}:5000/api/admin/questions/${editingId}`);
           const data = response.data;
           
           const initialAnswers = {};
@@ -66,7 +68,7 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
           setPositions(initialPositions);
 
           if (data.image_path) {
-            setImagePreview(`http://localhost:5000/static/${data.image_path}`);
+            setImagePreview(`${API_BASE_URL}:5000/static/${data.image_path}`);
           }
           setStatus({ loading: false, error: null, success: null });
         } catch (error) {
@@ -220,8 +222,8 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
 
     try {
       const url = isEditing
-        ? `http://localhost:5000/api/admin/questions/${editingId}`
-        : 'http://localhost:5000/api/admin/questions';
+        ? `${API_BASE_URL}:5000/api/admin/questions/${editingId}`
+        : `${API_BASE_URL}:5000/api/admin/questions`;
       const method = isEditing ? 'put' : 'post';
       
       const response = await axios[method](url, formData, { headers: { 'Content-Type': 'multipart/form-data' } });

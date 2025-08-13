@@ -28,7 +28,9 @@
 ## 📦 安裝步驟
 
 ### 1. 環境需求
-
+```bash
+curl -fsSL https//deb.nodesource.com/setup_20.x | sudo -E bash - sudo apt install -y nodejs
+```
 確保您的系統已安裝：
 - Node.js (版本 16.0.0 或以上)
 - npm 或 yarn 套件管理器

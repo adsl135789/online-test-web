@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 
+const API_BASE_URL = 'http://54.174.181.192';
+
 export default function UserInfoPage({ setSessionData }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ export default function UserInfoPage({ setSessionData }) {
 
     setStatus({ loading: true, error: null });
     try {
-      const response = await axios.post('http://localhost:5000/api/quiz/start', formData);
+      const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/start`, formData);
       setSessionData(response.data);
       navigate('/quiz');
     } catch (err) {

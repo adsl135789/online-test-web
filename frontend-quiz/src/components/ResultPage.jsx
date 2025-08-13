@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 
+const API_BASE_URL = 'http://54.174.181.192';
+
 export default function ResultPage({ sessionData }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ export default function ResultPage({ sessionData }) {
     
     const fetchResult = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/quiz/${sessionData.session_id}/result`);
+        const response = await axios.get(`${API_BASE_URL}:5000/api/quiz/${sessionData.session_id}/result`);
         setResult(response.data);
       } catch (err) {
         setError(t('resultError'));
