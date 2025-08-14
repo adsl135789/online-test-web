@@ -8,11 +8,12 @@ if os.path.exists(dotenv_path):
     
 # 取得 backend 資料夾的絕對路徑
 basedir = os.path.abspath(os.path.dirname(__file__))
+parent_dir = os.path.dirname(basedir)
 
 class Config:
     """基礎設定類別"""
     SQLALCHEMY_TRACK_MODIFICATIONS = False # 用來追蹤資料庫物件在 Session 中的每一次變更，不要開
-    UPLOADED_PATH = os.path.join(basedir, 'static', 'uploads')
+    UPLOADED_PATH = os.path.join(parent_dir, 'static', 'uploads')
     
 class DevelopmentConfig(Config):
     """開發環境設定"""

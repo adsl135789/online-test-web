@@ -2,6 +2,7 @@
 import os
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
+from PIL import Image
 from utils.models import Question, Response, TestSession 
 from utils.extensions import db
 
@@ -14,6 +15,64 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def convert_to_webp(input_path, output_path):
+    """
+    將圖片轉換為 WebP 格式
+    """
+    try:
+        with Image.open(input_path) as img:
+            # 檢查圖片是否需要透明度
+            if img.mode == 'RGBA':
+                # 儲存為無失真 WebP，保留透明度
+                img.save(
+                    output_path,
+                    'WEBP',
+                    lossless=True,
+                    quality=80, # lossless=True 時，quality 代表壓縮力度
+                    method=6    # 追求最佳壓縮效果
+                )
+            else:
+                # 儲存為失真 WebP，類似 JPEG
+                img.save(
+                    output_path,
+                    'WEBP',
+                    quality=80, # 類似 JPEG 的品質設定
+                    method=6
+                )
+        return True
+    except Exception as e:
+        print(f"轉換失敗: {e}")
+        return False
+
+def convert_to_webp_from_file_object(file_obj, output_path):
+    """
+    直接從檔案物件轉換為 WebP 格式
+    """
+    try:
+        with Image.open(file_obj) as img:
+            # 檢查圖片是否需要透明度
+            if img.mode == 'RGBA':
+                # 儲存為無失真 WebP，保留透明度
+                img.save(
+                    output_path,
+                    'WEBP',
+                    lossless=True,
+                    quality=80,
+                    method=6
+                )
+            else:
+                # 儲存為失真 WebP，類似 JPEG
+                img.save(
+                    output_path,
+                    'WEBP',
+                    quality=80,
+                    method=6
+                )
+        return True
+    except Exception as e:
+        print(f"轉換失敗: {e}")
+        return False
 
 @admin_api_bp.route('/questions', methods=['GET'])
 def get_questions():
@@ -86,16 +145,24 @@ def create_question():
 
     # --- 2. 處理圖片儲存 ---
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+        original_filename = secure_filename(file.filename)
+        # 更改副檔名為 .webp，並添加時間戳避免檔名衝突
+        import time
+        timestamp = str(int(time.time()))
+        filename_without_ext = os.path.splitext(original_filename)[0]
+        webp_filename = f"{filename_without_ext}_{timestamp}.webp"
+        
         # 確保上傳資料夾存在
         upload_folder = current_app.config['UPLOADED_PATH']
         os.makedirs(upload_folder, exist_ok=True)
-        # 儲存檔案
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)
         
-        # 我們在資料庫中只儲存相對於 static 資料夾的路徑
-        db_image_path = os.path.join('uploads', filename)
+        # 直接轉換為 WebP 格式
+        webp_file_path = os.path.join(upload_folder, webp_filename)
+        if convert_to_webp_from_file_object(file, webp_file_path):
+            # 我們在資料庫中只儲存相對於 static 資料夾的路徑
+            db_image_path = os.path.join('uploads', webp_filename)
+        else:
+            return jsonify({"error": "圖片壓縮轉換失敗"}), 500
     else:
         return jsonify({"error": "不允許的檔案格式"}), 400
 
@@ -122,8 +189,8 @@ def create_question():
         db.session.commit()
     except Exception as e:
         # 如果發生錯誤，需要刪除已上傳的圖片
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if os.path.exists(webp_file_path):
+            os.remove(webp_file_path)
         return jsonify({"error": "資料庫儲存失敗", "message": str(e)}), 500
 
     return jsonify({"message": "問題建立成功", "question_id": new_question.id}), 201
@@ -172,12 +239,22 @@ def update_question(question_id):
                 old_path = os.path.join(current_app.root_path, 'static', question.image_path)
                 if os.path.exists(old_path): os.remove(old_path)
             
-            # 儲存新圖片
-            filename = secure_filename(file.filename)
+            # 處理新圖片壓縮
+            original_filename = secure_filename(file.filename)
+            import time
+            timestamp = str(int(time.time()))
+            filename_without_ext = os.path.splitext(original_filename)[0]
+            webp_filename = f"{filename_without_ext}_{timestamp}.webp"
+            
             upload_folder = current_app.config['UPLOADED_PATH']
-            file_path = os.path.join(upload_folder, filename)
-            file.save(file_path)
-            question.image_path = os.path.join('uploads', filename)
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # 直接轉換為 WebP 格式
+            webp_file_path = os.path.join(upload_folder, webp_filename)
+            if convert_to_webp_from_file_object(file, webp_file_path):
+                question.image_path = os.path.join('uploads', webp_filename)
+            else:
+                return jsonify({"error": "圖片壓縮轉換失敗"}), 500
 
     # 更新其他資料
     try:
