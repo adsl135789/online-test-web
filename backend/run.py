@@ -34,4 +34,4 @@ app = create_app()
 
 if __name__ == '__main__':
     # 這裡的 debug=True 僅限於開發環境使用
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
