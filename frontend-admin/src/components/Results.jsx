@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = 'http://54.174.181.192';
+const API_BASE_URL = 'http://54.174.181.192:5000';
 
-// const API_BASE_URL = 'http://localhost'; // 本地開發環境
+// const API_BASE_URL = 'http://localhost:5000'; // 本地開發環境
 
 const Results = () => {
   const [sessions, setSessions] = useState([]);
@@ -19,7 +19,7 @@ const Results = () => {
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://${API_BASE_URL}:5000/api/admin/test-sessions`);
+      const response = await fetch(`${API_BASE_URL}/api/admin/test-sessions`);
       const data = await response.json();
       if (response.ok) {
         setSessions(data.sessions);
@@ -84,7 +84,7 @@ const Results = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/test-sessions/batch-delete', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/test-sessions/batch-delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

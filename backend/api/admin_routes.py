@@ -1,9 +1,6 @@
 # backend/api/admin_routes.py
 import os
-import csv
-from io import StringIO
-from datetime import datetime
-from flask import Blueprint, request, jsonify, current_app, make_response
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from PIL import Image
 from utils.models import Question, Response, TestSession 
@@ -372,139 +369,6 @@ def get_all_test_sessions():
     except Exception as e:
         return jsonify({"error": "無法獲取測試會話資料", "message": str(e)}), 500
 
-@admin_api_bp.route('/test-sessions/paginated', methods=['GET'])
-def get_paginated_test_sessions():
-    """
-    分頁獲取測試會話列表
-    """
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
-        
-        # 查詢測試會話並分頁
-        pagination = TestSession.query.order_by(TestSession.id.desc()).paginate(
-            page=page, 
-            per_page=per_page, 
-            error_out=False
-        )
-        
-        results = []
-        for session in pagination.items:
-            session_data = {
-                "id": session.id,
-                "question_id": session.question_id,
-                "overall_accuracy": session.overall_accuracy,
-                "average_reaction_time": session.average_reaction_time,
-                "finished_at": session.finished_at.isoformat() if session.finished_at else None
-            }
-            results.append(session_data)
-        
-        return jsonify({
-            "sessions": results,
-            "pagination": {
-                "page": pagination.page,
-                "pages": pagination.pages,
-                "per_page": pagination.per_page,
-                "total": pagination.total,
-                "has_next": pagination.has_next,
-                "has_prev": pagination.has_prev
-            }
-        }), 200
-        
-    except Exception as e:
-        return jsonify({"error": "無法獲取測試會話資料", "message": str(e)}), 500
-
-@admin_api_bp.route('/test-sessions/download-csv', methods=['POST'])
-def download_test_sessions_csv():
-    """
-    下載選定測試會話的CSV檔案
-    """
-    data = request.get_json()
-    session_ids = data.get('session_ids', [])
-    
-    if not session_ids:
-        return jsonify({"error": "請選擇要下載的測試會話"}), 400
-    
-    try:
-        # 查詢選定的測試會話及其回應
-        test_sessions = TestSession.query.filter(
-            TestSession.id.in_(session_ids)
-        ).options(db.joinedload(TestSession.responses)).all()
-        
-        # 創建CSV內容
-        output = StringIO()
-        writer = csv.writer(output)
-        
-        # 寫入標題行
-        headers = [
-            'Session_ID', 'Question_ID', 'Tester_Name', 'Age_Group', 'Gender', 
-            'Education', 'Vision_Status', 'Injury_Age', 'Braille_Ability',
-            'Mobility_Ability', 'Drawing_Frequency', 'Museum_Experience',
-            'Overall_Accuracy', 'Average_Reaction_Time', 'Finished_At',
-            'Up_User_Answer', 'Up_Correct_Answer', 'Up_Is_Correct', 'Up_Reaction_Time',
-            'Down_User_Answer', 'Down_Correct_Answer', 'Down_Is_Correct', 'Down_Reaction_Time',
-            'Left_User_Answer', 'Left_Correct_Answer', 'Left_Is_Correct', 'Left_Reaction_Time',
-            'Right_User_Answer', 'Right_Correct_Answer', 'Right_Is_Correct', 'Right_Reaction_Time',
-            'NE_User_Answer', 'NE_Correct_Answer', 'NE_Is_Correct', 'NE_Reaction_Time',
-            'NW_User_Answer', 'NW_Correct_Answer', 'NW_Is_Correct', 'NW_Reaction_Time',
-            'SE_User_Answer', 'SE_Correct_Answer', 'SE_Is_Correct', 'SE_Reaction_Time',
-            'SW_User_Answer', 'SW_Correct_Answer', 'SW_Is_Correct', 'SW_Reaction_Time'
-        ]
-        writer.writerow(headers)
-        
-        # 寫入資料
-        for session in test_sessions:
-            # 組織回應資料
-            responses_dict = {}
-            for response in session.responses:
-                responses_dict[response.direction] = response
-            
-            # 基本會話資料
-            row = [
-                session.id,
-                session.question_id,
-                session.tester_name or '',
-                session.tester_age_group,
-                session.tester_gender,
-                session.tester_education,
-                session.tester_vision_status,
-                session.tester_injury_age or '',
-                session.tester_braille_ability,
-                session.tester_mobility_ability,
-                session.tester_drawing_frequency,
-                session.tester_museum_experience,
-                session.overall_accuracy or '',
-                session.average_reaction_time or '',
-                session.finished_at.isoformat() if session.finished_at else ''
-            ]
-            
-            # 八個方向的回應資料
-            directions = ['up', 'down', 'left', 'right', 'ne', 'nw', 'se', 'sw']
-            for direction in directions:
-                if direction in responses_dict:
-                    resp = responses_dict[direction]
-                    row.extend([
-                        resp.user_answer or '',
-                        resp.correct_answer or '',
-                        resp.is_correct or '',
-                        resp.reaction_time_ms or ''
-                    ])
-                else:
-                    row.extend(['', '', '', ''])
-            
-            writer.writerow(row)
-        
-        # 創建回應
-        output.seek(0)
-        response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=test_sessions_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-        
-        return response
-        
-    except Exception as e:
-        return jsonify({"error": "CSV下載失敗", "message": str(e)}), 500
-
 @admin_api_bp.route('/test-sessions/batch-delete', methods=['POST'])
 def batch_delete_test_sessions():
     """批量刪除測試會話及其對應的回應資料"""
@@ -522,6 +386,7 @@ def batch_delete_test_sessions():
         if len(existing_ids) != len(session_ids):
             missing_ids = list(set(session_ids) - set(existing_ids))
             return jsonify({
+                "error": f"部分測試會話不存在: {missing_ids}"
             }), 404
         
         # 先刪除所有相關的responses
