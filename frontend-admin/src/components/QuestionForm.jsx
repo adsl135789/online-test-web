@@ -170,7 +170,6 @@ export default function QuestionForm() {
         y: 2 - row // y 座標：下到上 (0-2)
       };
     });
-    println(shapeCoordinates);
 
     // 生成答案
     const newAnswers = { ...answers };
