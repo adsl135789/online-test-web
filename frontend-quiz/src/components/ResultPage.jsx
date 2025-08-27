@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const API_BASE_URL = 'http://54.174.181.192';
+// const API_BASE_URL = 'http://54.174.181.192';
+
+const API_BASE_URL = 'http://localhost'; // 本地開發環境
 
 export default function ResultPage({ sessionData }) {
   const { t } = useLanguage();
@@ -45,14 +47,21 @@ export default function ResultPage({ sessionData }) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-cornsilk p-8">
-      <div className="text-center bg-papaya-whip p-12 rounded-2xl shadow-lg border-2 border-beige">
+      <div className="text-center bg-papaya-whip p-12 rounded-2xl shadow-lg border-2 border-beige max-w-4xl">
         <h1 className="text-5xl font-bold text-gray-800 mb-6">
           {t('testResult')}
         </h1>
-        <div className="space-y-4 text-2xl text-gray-700 mb-8">
-          <p>{t('accuracy', { value: result.accuracy })}</p>
-          <p>{t('averageTime', { value: result.average_reaction_time }, 'timeUnit')}</p>
-        </div>
+        
+        <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+          {t('thankYou')
+            .replace('{accuracy}', result.accuracy)
+            .replace('{averageTime}', `${result.average_reaction_time}${t('timeUnit')}`)}
+        </p>
+        
+        <p className="text-md text-gray-700 font-bold mb-8">
+          {t('contactInfo')} <a href="mailto:chy@nchu.edu.tw" className="text-blue-600 hover:text-blue-800 underline">chy@nchu.edu.tw</a>。
+        </p>
+        
         <div className="flex gap-6 justify-center">
           <button
             onClick={() => navigate('/user-info')}

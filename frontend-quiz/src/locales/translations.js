@@ -1,11 +1,12 @@
 export const translations = {
   zh: {
     // Page title
-    pageTitle: "空間能力線上測驗",
+    pageTitle: "空間認知能力線上測驗",
 
     // HomePage
-    title: "空間能力線上測驗",
+    title: "空間認知能力線上測驗",
     description: "本測驗旨在評估您對於三維空間物件在不同視角下的排列順序判斷能力。測驗將分為兩個階段，共八道題目。請依照指示完成測驗。",
+    projectLeader: "計畫主持人：國立中興大學 趙欣怡 副教授",
     startTest: "開始測驗",
     
     // Language selection
@@ -32,6 +33,10 @@ export const translations = {
     selectBraille: "請選擇點字能力",
     mobilityAbility: "定向行動能力",
     selectMobility: "請選擇定向行動能力",
+    drawingFrequency: "繪畫頻率",
+    selectDrawing: "請選擇繪畫頻率",
+    museumExperience: "博物館參觀經驗",
+    selectMuseum: "請選擇博物館參觀經驗",
     startQuiz: "進行測驗",
     preparing: "準備中...",
     fillRequired: "請填寫所有必填欄位。",
@@ -88,13 +93,39 @@ export const translations = {
     
     // ResultPage
     testResult: "測驗結果",
-    accuracy: "準確率: {value}",
-    averageTime: "平均反應時間: {value}",
-    timeUnit: "秒",
+    thankYou: "感謝您的參與，您測驗的結果為平均正確率{accuracy}、平均反應時間{averageTime}。",
+    contactInfo: "如有任何問題，請聯絡計畫主持人",
     retakeTest: "再測驗一次",
     backToHome: "回到首頁",
     calculatingResults: "計算結果中...",
-    resultError: "無法獲取測驗結果。"
+    resultError: "無法獲取測驗結果。",
+    timeUnit: "秒",
+
+    // Drawing frequency options
+    always: "總是",
+    often: "經常",
+    sometimes: "偶爾",
+    rarely: "很少",
+    never: "沒有",
+    
+    // Museum experience options
+    almostDaily: "幾乎每天",
+    weekly1to3: "一週1~3次",
+    monthly1to3: "一個月1~3次",
+    yearly1to3: "一年1~3次",
+    lessYearly: "一年不到1次",
+
+    // InstructionPage
+    stageTitle: "第{stage}階段說明",
+    stage1Intro1: "您好，這是一項關於空間感知能力及物體位置關係的測驗，測驗中將會出現一張圖片，顯示三個物體（正立方體、圓錐體、球體）之排列方位。",
+    stage1Intro2: "您被預設坐在單一方位上觀察這三個物體的方向及距離，再運用空間旋轉能力從不同方位或角度來思考三個物體在不同方位下觀看的排列順序。",
+    stage1Intro3: "請從以下的選項選出不同視角觀看下，三個物體的正確排列順序。",
+    stage2Intro1: "同樣地，測驗中將會出現一張圖片，顯示三個物體（正立方體、圓錐體、球體）之排列方位。",
+    stage2Intro2: "您被預設坐在單一方位上觀察這三個物體的方向及距離，再運用空間旋轉能力從不同方位或角度來思考三個物體在不同方位下觀看的排列順序。",
+    stage2Intro3: "請從以下的選項選出不同視角觀看下，三個物體的正確排列順序。",
+    stage2Intro4: "接下來，將有來自不同角落的方位觀看三個物體，可能會有前後物體被遮蔽的狀況，能觀察到的物體數量可能會有三個或兩個。如果物體大部分被遮蔽住可以選擇不排列，如果還可以看到物體的造型，可以將其排列出來。",
+    preparingImages: "正在準備圖片資源...",
+    startStage: "開始測驗",
   },
   
   en: {
@@ -104,6 +135,7 @@ export const translations = {
     // HomePage
     title: "Spatial Ability Online Assessment",
     description: "This assessment aims to evaluate your ability to judge the arrangement order of three-dimensional spatial objects from different viewing angles. The test consists of two phases with a total of eight questions. Please complete the test according to the instructions.",
+    projectLeader: "Project Leader: Associate Professor Hsin-Yi Chao, National Chung Hsing University",
     startTest: "Start Test",
     
     // Language selection
@@ -130,6 +162,10 @@ export const translations = {
     selectBraille: "Please select braille ability",
     mobilityAbility: "Orientation and Mobility Ability",
     selectMobility: "Please select mobility ability",
+    drawingFrequency: "Drawing Frequency",
+    selectDrawing: "Please select drawing frequency",
+    museumExperience: "Museum Visiting Experience",
+    selectMuseum: "Please select museum visiting experience",
     startQuiz: "Start Quiz",
     preparing: "Preparing...",
     fillRequired: "Please fill in all required fields.",
@@ -186,13 +222,39 @@ export const translations = {
     
     // ResultPage
     testResult: "Test Results",
-    accuracy: "Accuracy: {value}",
-    averageTime: "Average Reaction Time: {value}",
-    timeUnit: "sec",
+    thankYou: "Thank you for your participation. Your test results are: average accuracy {accuracy}, average reaction time {averageTime}.",
+    contactInfo: "If you have any questions, please contact the project leader",
     retakeTest: "Take Test Again",
     backToHome: "Back to Home",
     calculatingResults: "Calculating results...",
-    resultError: "Unable to retrieve test results."
+    resultError: "Unable to retrieve test results.",
+    timeUnit: "seconds",
+
+    // Drawing frequency options
+    always: "Always",
+    often: "Often",
+    sometimes: "Sometimes",
+    rarely: "Rarely",
+    never: "Never",
+    
+    // Museum experience options
+    almostDaily: "Almost Daily",
+    weekly1to3: "1-3 Times per Week",
+    monthly1to3: "1-3 Times per Month",
+    yearly1to3: "1-3 Times per Year",
+    lessYearly: "Less than Once per Year",
+
+    // InstructionPage
+    stageTitle: "Stage {stage} Instructions",
+    stage1Intro1: "Hello, this is a test about spatial perception ability and object positional relationships. In the test, an image will appear showing the arrangement of three objects (cube, cone, sphere).",
+    stage1Intro2: "You are preset to observe the direction and distance of these three objects from a single orientation, then use spatial rotation ability to think about the arrangement order of the three objects when viewed from different orientations or angles.",
+    stage1Intro3: "Please select the correct arrangement order of the three objects when viewed from different perspectives from the following options.",
+    stage2Intro1: "Similarly, an image will appear in the test showing the arrangement of three objects (cube, cone, sphere).",
+    stage2Intro2: "You are preset to observe the direction and distance of these three objects from a single orientation, then use spatial rotation ability to think about the arrangement order of the three objects when viewed from different orientations or angles.",
+    stage2Intro3: "Please select the correct arrangement order of the three objects when viewed from different perspectives from the following options.",
+    stage2Intro4: "Next, there will be views from different corners, and objects may be obscured by others. The number of observable objects may be three or two. If an object is mostly obscured, you can choose not to arrange it. If you can still see the shape of the object, you can arrange it.",
+    preparingImages: "Preparing image resources...",
+    startStage: "Start Test",
   },
   
   ja: {
@@ -202,6 +264,7 @@ export const translations = {
     // HomePage
     title: "空間能力オンラインテスト",
     description: "このテストは、異なる視角から三次元空間オブジェクトの配列順序を判断する能力を評価することを目的としています。テストは2つの段階で構成され、全8問があります。指示に従ってテストを完了してください。",
+    projectLeader: "プロジェクトリーダー：国立中興大学 趙欣怡 副教授",
     startTest: "テスト開始",
     
     // Language selection
@@ -228,6 +291,10 @@ export const translations = {
     selectBraille: "点字能力を選択してください",
     mobilityAbility: "歩行訓練能力",
     selectMobility: "歩行訓練能力を選択してください",
+    drawingFrequency: "絵画頻度",
+    selectDrawing: "絵画頻度を選択してください",
+    museumExperience: "博物館見学経験",
+    selectMuseum: "博物館見学経験を選択してください",
     startQuiz: "テスト開始",
     preparing: "準備中...",
     fillRequired: "すべての必須項目を入力してください。",
@@ -284,13 +351,39 @@ export const translations = {
     
     // ResultPage
     testResult: "テスト結果",
-    accuracy: "正答率: {value}",
-    averageTime: "平均反応時間: {value}",
-    timeUnit: "秒",
+    thankYou: "ご参加いただきありがとうございます。あなたのテスト結果は：平均正答率{accuracy}、平均反応時間{averageTime}です。",
+    contactInfo: "ご質問がございましたら、プロジェクトリーダーまでお問い合わせください",
     retakeTest: "もう一度テストする",
     backToHome: "ホームに戻る",
     calculatingResults: "結果を計算中...",
-    resultError: "テスト結果を取得できません。"
+    resultError: "テスト結果を取得できません。",
+    timeUnit: "秒",
+
+    // Drawing frequency options
+    always: "いつも",
+    often: "よく",
+    sometimes: "ときどき",
+    rarely: "めったに",
+    never: "全くない",
+    
+    // Museum experience options
+    almostDaily: "ほぼ毎日",
+    weekly1to3: "週1~3回",
+    monthly1to3: "月1~3回",
+    yearly1to3: "年1~3回",
+    lessYearly: "年1回未満",
+
+    // InstructionPage
+    stageTitle: "ステージ{stage}の説明",
+    stage1Intro1: "こんにちは、これは空間認知能力と物体の位置関係に関するテストです。テストでは、3つの物体（立方体、円錐、球体）の配置を示す画像が表示されます。",
+    stage1Intro2: "あなたは単一の方向からこれら3つの物体の方向と距離を観察し、空間回転能力を使って異なる方向や角度から3つの物体の配置順序を考えます。",
+    stage1Intro3: "以下の選択肢から、異なる視点で見た時の3つの物体の正しい配置順序を選択してください。",
+    stage2Intro1: "同様に、テストでは3つの物体（立方体、円錐、球体）の配置を示す画像が表示されます。",
+    stage2Intro2: "あなたは単一の方向からこれら3つの物体の方向と距離を観察し、空間回転能力を使って異なる方向や角度から3つの物体の配置順序を考えます。",
+    stage2Intro3: "以下の選択肢から、異なる視点で見た時の3つの物体の正しい配置順序を選択してください。",
+    stage2Intro4: "次に、異なる角度からの視点があり、物体が他の物体に遮られる場合があります。観察できる物体の数は3個または2個の場合があります。物体がほとんど遮られている場合は配置しないことを選択でき、物体の形状がまだ見える場合は配置することができます。",
+    preparingImages: "画像リソースを準備中...",
+    startStage: "テスト開始",
   }
 };
 
@@ -299,3 +392,4 @@ export const supportedLanguages = [
   { code: 'en', name: 'English', englishName: 'English' },
   { code: 'ja', name: '日本語', englishName: 'Japanese' }
 ];
+

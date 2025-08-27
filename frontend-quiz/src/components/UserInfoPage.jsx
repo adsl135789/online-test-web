@@ -6,6 +6,8 @@ import LanguageSelector from './LanguageSelector';
 
 const API_BASE_URL = 'http://54.174.181.192';
 
+// const API_BASE_URL = 'http://localhost'; // 本地開發環境
+
 export default function UserInfoPage({ setSessionData }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -18,6 +20,8 @@ export default function UserInfoPage({ setSessionData }) {
     injury_age: '',
     braille_ability: '',
     mobility_ability: '',
+    drawing_frequency: '',
+    museum_experience: '',
   });
   const [status, setStatus] = useState({ loading: false, error: null });
 
@@ -30,7 +34,7 @@ export default function UserInfoPage({ setSessionData }) {
     e.preventDefault();
     
     const requiredFields = ['age_group', 'gender', 'education', 'vision_status', 
-                           'braille_ability', 'mobility_ability'];
+                           'braille_ability', 'mobility_ability', 'drawing_frequency', 'museum_experience'];
     for (const field of requiredFields) {
       if (!formData[field]) {
         setStatus({ loading: false, error: t('fillRequired') });
@@ -42,7 +46,7 @@ export default function UserInfoPage({ setSessionData }) {
     try {
       const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/start`, formData);
       setSessionData(response.data);
-      navigate('/quiz');
+      navigate('/instruction'); // 修改跳轉目標為instruction頁面
     } catch (err) {
       setStatus({ loading: false, error: err.response?.data?.error || t('startTestError') });
       console.error(err);
@@ -216,6 +220,50 @@ export default function UserInfoPage({ setSessionData }) {
                 <option value="會">{t('yes')}</option>
                 <option value="不會">{t('no')}</option>
                 <option value="正在學習">{t('learning')}</option>
+              </select>
+            </div>
+
+            {/* 繪畫頻率 */}
+            <div>
+              <label htmlFor="drawing_frequency" className="block text-lg font-medium text-gray-700">
+                {t('drawingFrequency')} <span className="text-red-500">{t('required')}</span>
+              </label>
+              <select 
+                name="drawing_frequency" 
+                id="drawing_frequency" 
+                value={formData.drawing_frequency} 
+                onChange={handleChange} 
+                className="mt-1 block w-full px-4 py-3 border border-beige rounded-lg shadow-sm focus:outline-none focus:ring-buff focus:border-buff"
+                required
+              >
+                <option value="">{t('selectDrawing')}</option>
+                <option value="總是">{t('always')}</option>
+                <option value="經常">{t('often')}</option>
+                <option value="偶爾">{t('sometimes')}</option>
+                <option value="很少">{t('rarely')}</option>
+                <option value="沒有">{t('never')}</option>
+              </select>
+            </div>
+
+            {/* 博物館參觀經驗 */}
+            <div>
+              <label htmlFor="museum_experience" className="block text-lg font-medium text-gray-700">
+                {t('museumExperience')} <span className="text-red-500">{t('required')}</span>
+              </label>
+              <select 
+                name="museum_experience" 
+                id="museum_experience" 
+                value={formData.museum_experience} 
+                onChange={handleChange} 
+                className="mt-1 block w-full px-4 py-3 border border-beige rounded-lg shadow-sm focus:outline-none focus:ring-buff focus:border-buff"
+                required
+              >
+                <option value="">{t('selectMuseum')}</option>
+                <option value="幾乎每天">{t('almostDaily')}</option>
+                <option value="一週1~3次">{t('weekly1to3')}</option>
+                <option value="一個月1~3次">{t('monthly1to3')}</option>
+                <option value="一年1~3次">{t('yearly1to3')}</option>
+                <option value="一年不到1次">{t('lessYearly')}</option>
               </select>
             </div>
           </div>

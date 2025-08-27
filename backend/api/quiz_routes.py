@@ -17,7 +17,7 @@ def start_quiz():
 
     # 檢查必填欄位
     required_fields = ['age_group', 'gender', 'education', 'vision_status', 
-                      'braille_ability', 'mobility_ability']
+                      'braille_ability', 'mobility_ability', 'drawing_frequency', 'museum_experience']
     for field in required_fields:
         if not data.get(field):
             return jsonify({"error": f"缺少必填欄位: {field}"}), 400
@@ -52,6 +52,8 @@ def start_quiz():
             tester_injury_age=injury_age,
             tester_braille_ability=data['braille_ability'],
             tester_mobility_ability=data['mobility_ability'],
+            tester_drawing_frequency=data['drawing_frequency'],
+            tester_museum_experience=data['museum_experience'],
             question_order=question_order
         )
         db.session.add(new_session)
@@ -64,40 +66,15 @@ def start_quiz():
         "message": "測驗已成功建立",
         "session_id": new_session.id,
         "question_id": new_session.question_id,
-        "question_order": new_session.question_order
+        "question_order": new_session.question_order,
+        "question_image": random_question.image_path,
+        "square_x": random_question.square_x,
+        "square_y": random_question.square_y,
+        "triangle_x": random_question.triangle_x,
+        "triangle_y": random_question.triangle_y,
+        "circle_x": random_question.circle_x,
+        "circle_y": random_question.circle_y
     }), 201
-
-@quiz_api_bp.route('/<int:session_id>/question/<direction>', methods=['GET'])
-def get_quiz_question(session_id, direction):
-    """獲取指定方向的題目內容"""
-    session = TestSession.query.get_or_404(session_id)
-    question = Question.query.get_or_404(session.question_id)
-
-    # 根據方向產生題目文字
-    direction_map = {
-        "up": "↑ (上)", "down": "↓ (下)", "left": "← (左)", "right": "→ (右)",
-        "ne": "↖ (右上)", "nw": "↗ (左上)", "se": "↙ (右下)", "sw": "↘ (左下)"
-    }
-    question_text = f"從「{direction_map.get(direction, '')}」方向觀看這三個物件從左到右的排列順序，哪一個是正確答案？"
-
-    # 根據階段產生選項
-    if direction in ['up', 'down', 'left', 'right']:
-        options = ["S,T,C", "S,C,T", "T,S,C", "T,C,S", "C,S,T", "C,T,S"]
-    else:
-        options = ["S,T,C", "S,C,T", "T,S,C", "T,C,S", "C,S,T", "C,T,S", "S,T", "T,S", "S,C", "C,S", "T,C", "C,T"]
-    
-    random.shuffle(options)
-
-    return jsonify({
-        "image_path": question.image_path,
-        "square_x": question.square_x,
-        "square_y": question.square_y,
-        "triangle_x": question.triangle_x,
-        "triangle_y": question.triangle_y,
-        "circle_x": question.circle_x,
-        "circle_y": question.circle_y,
-        "options": options
-    })
 
 @quiz_api_bp.route('/<int:session_id>/answer', methods=['POST'])
 def submit_answer(session_id):

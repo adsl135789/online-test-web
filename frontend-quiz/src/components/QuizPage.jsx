@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
+import { imageCache } from './InstructionPage';
 
+// const API_BASE_URL = 'http://localhost'; // 本地開發環境
 const API_BASE_URL = 'http://54.174.181.192';
 
 // 符號對應表
-const SYMBOL_MAP = { 'S': '⬛', 'T': '🔺', 'C': '🟢' };
+const SYMBOL_MAP = { 'S': '■', 'T': '▲', 'C': '●' };
 
 // 方向到箭頭的對應表
 const DIRECTION_ARROW_MAP = {
@@ -22,21 +24,43 @@ const DIRECTION_ARROW_MAP = {
 
 function formatOption(optionStr) {
   if (!optionStr) return ''; // 如果傳入的值是 null 或 undefined，直接回傳空字串
-  return optionStr.split(',').map(char => SYMBOL_MAP[char] || char).join(' ');
+  return optionStr.split(',').map(char => {
+    const symbol = SYMBOL_MAP[char] || char;
+    // 如果是正方形，用span包裹並加上較大的樣式
+    if (symbol === '■') {
+      return `<span class="text-4xl">${symbol}</span>`;
+    }
+    return symbol;
+  }).join(' ');
 }
 
-export default function QuizPage({ sessionData }) {
+// 根據階段生成選項
+function generateOptions(direction) {
+  let options;
+  if (['up', 'down', 'left', 'right'].includes(direction)) {
+    // 第一階段選項
+    options = ["S,T,C", "S,C,T", "T,S,C", "T,C,S", "C,S,T", "C,T,S"];
+  } else {
+    // 第二階段選項
+    options = ["S,T,C", "S,C,T", "T,S,C", "T,C,S", "C,S,T", "C,T,S", "S,T", "T,S", "S,C", "C,S", "T,C", "C,T"];
+  }
+  
+  // 隨機排序
+  return options.sort(() => Math.random() - 0.5);
+}
+
+export default function QuizPage({ sessionData, currentStage, setCurrentStage, currentQuestionIndex, setCurrentQuestionIndex, questionCoordinates }) {
   const { t, currentLanguage } = useLanguage();
   const navigate = useNavigate();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [questionData, setQuestionData] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
   const [correctAnswer, setCorrectAnswer] = useState(null);
   const [time, setTime] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [cachedImageUrl, setCachedImageUrl] = useState(null);
+  const [currentOptions, setCurrentOptions] = useState([]);
   
   const timerRef = useRef(null);
 
@@ -48,40 +72,53 @@ export default function QuizPage({ sessionData }) {
     }
   }, [sessionData, navigate]);
 
-  // 獲取題目資料的函式
+  // 檢查是否需要顯示第二階段說明
   useEffect(() => {
     if (!sessionData) return;
+
+    // 第二階段開始前 (第4題) - 跳轉回instruction頁面
+    if (currentQuestionIndex === 4 && currentStage === 1) {
+      // 先設置階段為2，然後跳轉
+      setCurrentStage(2);
+      navigate('/instruction');
+      return;
+    }
+  }, [currentQuestionIndex, currentStage, sessionData, navigate, setCurrentStage]);
+
+  // 準備題目資料
+  useEffect(() => {
+    if (!sessionData || !questionCoordinates) return;
     
-    const fetchQuestion = async () => {
-      if (currentQuestionIndex >= sessionData.question_order.length) {
-        // 所有題目回答完畢，跳轉到結果頁
-        navigate('/result');
-        return;
+    if (currentQuestionIndex >= sessionData.question_order.length) {
+      // 所有題目回答完畢，跳轉到結果頁
+      navigate('/result');
+      return;
+    }
+
+    // 重置題目狀態
+    setIsSubmitted(false);
+    setSelectedAnswer(null);
+    setIsCorrect(null);
+    setCorrectAnswer(null);
+    setTime(0);
+
+    // 設置圖片URL
+    if (sessionData.question_image) {
+      const cachedUrl = imageCache[sessionData.question_image];
+      if (cachedUrl) {
+        setCachedImageUrl(cachedUrl);
+      } else {
+        const imageUrl = `${API_BASE_URL}:5000/static/${sessionData.question_image}`;
+        setCachedImageUrl(imageUrl);
       }
+    }
 
-      setLoading(true);
-      setIsSubmitted(false);
-      setSelectedAnswer(null);
-      setIsCorrect(null);
-      setCorrectAnswer(null);
-      setTime(0);
+    // 生成當前題目的選項
+    const direction = sessionData.question_order[currentQuestionIndex];
+    const options = generateOptions(direction);
+    setCurrentOptions(options);
 
-      const direction = sessionData.question_order[currentQuestionIndex];
-      
-      try {
-        const response = await axios.get(`${API_BASE_URL}:5000/api/quiz/${sessionData.session_id}/question/${direction}`);
-        setQuestionData(response.data);
-        setError(null);
-      } catch (err) {
-        setError(t('loadQuestionError'));
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchQuestion();
-  }, [currentQuestionIndex, sessionData, navigate, t]);
+  }, [currentQuestionIndex, sessionData, navigate, questionCoordinates]);
 
   // 計時器邏輯
   useEffect(() => {
@@ -116,13 +153,14 @@ export default function QuizPage({ sessionData }) {
       console.error(err);
     }
   };
-  
+
   // 前往下一個問題
   const handleNextQuestion = () => {
     setCurrentQuestionIndex(prev => prev + 1);
   };
 
   if (!sessionData) return null; // 路由保護
+
   if (loading) return <div className="flex items-center justify-center min-h-screen bg-cornsilk">{t('loading')}</div>;
   if (error) return <div className="flex items-center justify-center min-h-screen bg-cornsilk text-red-500">{error}</div>;
 
@@ -131,10 +169,45 @@ export default function QuizPage({ sessionData }) {
 
   // 根據語言選擇對應的題目描述
   const getQuestionPrompt = () => {
+    const directionTexts = {
+      zh: {
+        'left': '→三個物體的正左方位置',
+        'up': '↑三個物體的正前方位置',
+        'right': '←三個物體的正右方位置',
+        'down': '↓三個物體的正後方位置',
+        'ne': '↙三個物體的正左邊位置',
+        'se': '↖三個物體的正前方位置',
+        'sw': '↗三個物體的正左邊位置',
+        'nw': '↘三個物體的正前方位置'
+      },
+      en: {
+        'left': '→directly to the left of the three objects',
+        'up': '↑directly in front of the three objects',
+        'right': '←directly to the right of the three objects',
+        'down': '↓directly behind the three objects',
+        'ne': '↙to the left side of the three objects',
+        'se': '↖in front of the three objects',
+        'sw': '↗to the left side of the three objects',
+        'nw': '↘in front of the three objects'
+      },
+      ja: {
+        'left': '→三つの物体の真左の位置',
+        'up': '↑三つの物体の真正面の位置',
+        'right': '←三つの物体の真右の位置',
+        'down': '↓三つの物体の真後ろの位置',
+        'ne': '↙三つの物体の左側の位置',
+        'se': '↖三つの物体の正面の位置',
+        'sw': '↗三つの物体の左側の位置',
+        'nw': '↘三つの物体の正面の位置'
+      }
+    };
+
+    const directionText = directionTexts[currentLanguage][currentDirection] || directionTexts.zh[currentDirection];
+    
     const prompts = {
-      zh: `從「${directionArrow}」方向觀看這三個物件從左到右的排列順序，哪一個是正確答案？`,
-      en: `Which is the correct answer when you look at the order of these three objects from left to right in the "${directionArrow}" direction?`,
-      ja: `「${directionArrow}」の方向からこの三つの物体を見たとき、左から右への並び順として正しいものはどれですか？`
+      zh: `從「${directionText}」觀看這三個物件從左到右的排列順序，哪一個是正確答案？`,
+      en: `Which is the correct answer when you look at the order of these three objects from left to right from "${directionText}"?`,
+      ja: `「${directionText}」からこの三つの物体を見たとき、左から右への並び順として正しいものはどれですか？`
     };
     return prompts[currentLanguage] || prompts.zh;
   };
@@ -165,11 +238,17 @@ export default function QuizPage({ sessionData }) {
           <div className="flex flex-col lg:flex-row items-start justify-center gap-8 mb-6">
             {/* 左側：題目圖片 */}
             <div className="flex-shrink-0">
-              <img 
-                src={`${API_BASE_URL}:5000/static/${questionData.image_path}`} 
-                alt="測驗圖片" 
-                className="max-w-full md:max-w-lg mx-auto rounded-lg border-2 border-beige" 
-              />
+              {cachedImageUrl ? (
+                <img 
+                  src={cachedImageUrl}
+                  alt="測驗圖片" 
+                  className="max-w-full md:max-w-lg mx-auto rounded-lg border-2 border-beige" 
+                />
+              ) : (
+                <div className="max-w-full md:max-w-lg mx-auto rounded-lg border-2 border-beige bg-gray-200 flex items-center justify-center h-48">
+                  <span className="text-gray-500">{t('loading')}</span>
+                </div>
+              )}
             </div>
             
             {/* 右側：5x5 方向指引格子 */}
@@ -192,39 +271,30 @@ export default function QuizPage({ sessionData }) {
                     
                     // 檢查哪個物件在這個位置
                     let objectSymbol = '';
+                    let symbolClass = 'text-4xl'; // 預設樣式
                     
-                    // 確保資料存在且為數字類型
-                    if (questionData?.square_x !== undefined && questionData?.square_y !== undefined &&
-                        Number(questionData.square_x) === cartesianX && Number(questionData.square_y) === cartesianY) {
-                      objectSymbol = '⬛';
-                    } else if (questionData?.triangle_x !== undefined && questionData?.triangle_y !== undefined &&
-                               Number(questionData.triangle_x) === cartesianX && Number(questionData.triangle_y) === cartesianY) {
-                      objectSymbol = '🔺';
-                    } else if (questionData?.circle_x !== undefined && questionData?.circle_y !== undefined &&
-                               Number(questionData.circle_x) === cartesianX && Number(questionData.circle_y) === cartesianY) {
-                      objectSymbol = '🟢';
+                    // 使用questionCoordinates資料
+                    if (questionCoordinates?.square_x !== undefined && questionCoordinates?.square_y !== undefined &&
+                        Number(questionCoordinates.square_x) === cartesianX && Number(questionCoordinates.square_y) === cartesianY) {
+                      objectSymbol = '■';
+                      symbolClass = 'text-5xl'; // 正方形使用更大的字體
+                    } else if (questionCoordinates?.triangle_x !== undefined && questionCoordinates?.triangle_y !== undefined &&
+                               Number(questionCoordinates.triangle_x) === cartesianX && Number(questionCoordinates.triangle_y) === cartesianY) {
+                      objectSymbol = '▲';
+                    } else if (questionCoordinates?.circle_x !== undefined && questionCoordinates?.circle_y !== undefined &&
+                               Number(questionCoordinates.circle_x) === cartesianX && Number(questionCoordinates.circle_y) === cartesianY) {
+                      objectSymbol = '●';
                     }
-                    
-                    // 中心位置特殊處理
-                    // if (row === 2 && col === 2) {
-                    //   return (
-                    //     <div key={index} className="w-12 h-12 flex items-center justify-center bg-papaya-whip rounded border-2 border-buff relative">
-                    //       <span className="text-2xl">{objectSymbol || '⭐'}</span>
-                    //       <span className="absolute bottom-0 right-0 text-xs text-gray-500">{debugInfo}</span>
-                    //     </div>
-                    //   );
-                    // }
                     
                     return (
                       <div key={index} className="w-12 h-12 flex items-center justify-center bg-cornsilk rounded border-2 border-beige relative">
-                        <span className="text-2xl">{objectSymbol}</span>
+                        <span className={`${symbolClass} leading-none flex items-center justify-center`}>{objectSymbol}</span>
                       </div>
                     );
                   } else {
                     // 外圍區域 - 顯示方向箭頭
                     let arrowSymbol = '';
                     
-                    // 根據當前觀看方向高亮對應的箭頭
                     const isCurrentDirection = 
                       (currentDirection === 'up' && row === 0 && col === 2) ||
                       (currentDirection === 'down' && row === 4 && col === 2) ||
@@ -235,18 +305,15 @@ export default function QuizPage({ sessionData }) {
                       (currentDirection === 'sw' && row === 4 && col === 0) ||
                       (currentDirection === 'se' && row === 4 && col === 4);
                     
-                    // 第一行 (row 0)
                     if (row === 0) {
                       if (col === 0) arrowSymbol = '↘'; // nw
                       else if (col === 2) arrowSymbol = '↓'; // up
                       else if (col === 4) arrowSymbol = '↙'; // ne
                     }
-                    // 第三行 (row 2) - 左右兩側
                     else if (row === 2) {
                       if (col === 0) arrowSymbol = '→'; // left
                       else if (col === 4) arrowSymbol = '←'; // right
                     }
-                    // 第五行 (row 4)
                     else if (row === 4) {
                       if (col === 0) arrowSymbol = '↗'; // sw
                       else if (col === 2) arrowSymbol = '↑'; // down
@@ -254,10 +321,10 @@ export default function QuizPage({ sessionData }) {
                     }
                     
                     return (
-                      <div key={index} className={`w-12 h-12 flex items-center justify-center rounded text-2xl ${
+                      <div key={index} className={`w-12 h-12 flex items-center justify-center rounded text-2xl leading-none ${
                         isCurrentDirection ? 'bg-yellow-300 border-2 border-yellow-500' : 'bg-gray-100'
                       }`}>
-                        {arrowSymbol}
+                        <span className="flex items-center justify-center">{arrowSymbol}</span>
                       </div>
                     );
                   }
@@ -278,13 +345,11 @@ export default function QuizPage({ sessionData }) {
 
         {/* 選項區 */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          {questionData.options.map((option, index) => {
+          {currentOptions.map((option, index) => {
             const isSelected = selectedAnswer === option;
             let buttonClass = 'bg-cornsilk hover:bg-beige'; // 預設樣式
 
             if (isSubmitted) {
-              // --- 已修正 ---
-              // 只有在從後端拿到結果後，才改變顏色
               if (isCorrect !== null) {
                 if (option === correctAnswer) {
                   buttonClass = 'bg-green-400 text-white'; // 正確答案
@@ -294,11 +359,9 @@ export default function QuizPage({ sessionData }) {
                   buttonClass = 'bg-gray-200 text-gray-500'; // 其他未選答案
                 }
               } else {
-                // 提交了，但在等待後端回傳時的樣式
                 buttonClass = 'bg-gray-200 text-gray-500'; 
               }
             } else if (isSelected) {
-              // 尚未提交，但使用者已選擇的樣式
               buttonClass = 'bg-buff text-white'; 
             }
             
@@ -308,9 +371,8 @@ export default function QuizPage({ sessionData }) {
                 onClick={() => !isSubmitted && setSelectedAnswer(option)}
                 disabled={isSubmitted}
                 className={`p-4 rounded-lg text-2xl font-bold transition-all duration-200 ${buttonClass}`}
-              >
-                {formatOption(option)}
-              </button>
+                dangerouslySetInnerHTML={{ __html: formatOption(option) }}
+              />
             );
           })}
         </div>
@@ -327,9 +389,12 @@ export default function QuizPage({ sessionData }) {
                 {isCorrect ? (
                   <p className="text-2xl font-bold text-green-600">{t('correct')}</p>
                 ) : (
-                  <p className="text-2xl font-bold text-red-600">{t('incorrect', { answer: formatOption(correctAnswer) })}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {t('incorrect').replace('{answer}', '')}
+                    <span dangerouslySetInnerHTML={{ __html: formatOption(correctAnswer) }} />
+                  </p>
                 )}
-                <button onClick={handleNextQuestion} className="bg-tea-green hover:bg-beige text-buff text-2xl font-bold py-3 px-12 rounded-lg shadow-md">
+                <button onClick={handleNextQuestion} className="bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-3 px-12 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
                   {currentQuestionIndex + 1 >= sessionData.question_order.length ? t('viewResults') : t('nextQuestion')}
                 </button>
               </div>

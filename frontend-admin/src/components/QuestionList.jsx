@@ -3,6 +3,8 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://54.174.181.192';
 
+// const API_BASE_URL = 'http://localhost'; // 本地開發環境
+
 const SYMBOL_MAP = { 'S': '⬛', 'T': '🔺', 'C': '🟢' };
 
 function formatAnswer(answerStr) {

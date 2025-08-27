@@ -45,6 +45,8 @@ class TestSession(db.Model):
     tester_injury_age = db.Column(db.Integer, nullable=True)  # 損傷時間（非必填）
     tester_braille_ability = db.Column(db.String(20), nullable=False)  # 點字能力
     tester_mobility_ability = db.Column(db.String(20), nullable=False)  # 定向行動能力
+    tester_drawing_frequency = db.Column(db.String(20), nullable=False)  # 繪畫頻率
+    tester_museum_experience = db.Column(db.String(30), nullable=False)  # 博物館參觀經驗
     
     finished_at = db.Column(db.DateTime)
     overall_accuracy = db.Column(db.Float)

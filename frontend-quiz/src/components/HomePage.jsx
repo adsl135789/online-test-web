@@ -21,6 +21,9 @@ export default function HomePage() {
         <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
           {t('description')}
         </p>
+        <p className="text-md text-gray-700 font-bold mb-8">
+          {t('projectLeader')} <a href="mailto:chy@nchu.edu.tw" className="text-blue-600 hover:text-blue-800 underline">chy@nchu.edu.tw</a>
+        </p>
         <button
           onClick={() => navigate('/user-info')}
           className="bg-buff hover:bg-opacity-90 text-white text-2xl font-bold py-4 px-10 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
