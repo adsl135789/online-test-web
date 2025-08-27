@@ -175,20 +175,20 @@ export default function QuestionForm() {
     const newAnswers = { ...answers };
     const shapes = Object.keys(SHAPES);
     
-    // 下: 根據 x 座標由小到大排列
-    const downOrder = shapes.sort((a, b) => shapeCoordinates[a].x - shapeCoordinates[b].x);
+    // 下: 根據 x 座標由小到大排列 (從左到右)
+    const downOrder = [...shapes].sort((a, b) => shapeCoordinates[a].x - shapeCoordinates[b].x);
     newAnswers.answer_down = downOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
     
-    // 右: 根據 y 座標由小到大排列
-    const rightOrder = shapes.sort((a, b) => shapeCoordinates[a].y - shapeCoordinates[b].y);
+    // 右: 根據 y 座標由小到大排列 (從下到上)
+    const rightOrder = [...shapes].sort((a, b) => shapeCoordinates[a].y - shapeCoordinates[b].y);
     newAnswers.answer_right = rightOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
     
-    // 上: 根據 x 座標由大到小排列
-    const upOrder = shapes.sort((a, b) => shapeCoordinates[b].x - shapeCoordinates[a].x);
+    // 上: 根據 x 座標由大到小排列 (從右到左)
+    const upOrder = [...shapes].sort((a, b) => shapeCoordinates[b].x - shapeCoordinates[a].x);
     newAnswers.answer_up = upOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
     
-    // 左: 根據 y 座標由大到小排列
-    const leftOrder = shapes.sort((a, b) => shapeCoordinates[b].y - shapeCoordinates[a].y);
+    // 左: 根據 y 座標由大到小排列 (從上到下)
+    const leftOrder = [...shapes].sort((a, b) => shapeCoordinates[b].y - shapeCoordinates[a].y);
     newAnswers.answer_left = leftOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
 
     setAnswers(newAnswers);
