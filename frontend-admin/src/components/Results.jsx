@@ -1,0 +1,312 @@
+import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = 'http://54.174.181.192';
+
+// const API_BASE_URL = 'http://localhost'; // 本地開發環境
+
+const Results = () => {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalSessions, setTotalSessions] = useState(0);
+  const [selectedSessions, setSelectedSessions] = useState(new Set());
+  const sessionsPerPage = 10;
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://${API_BASE_URL}:5000/api/admin/test-sessions`);
+      const data = await response.json();
+      if (response.ok) {
+        setSessions(data.sessions);
+        setTotalSessions(data.total_sessions);
+      }
+    } catch (error) {
+      console.error('獲取測試會話失敗:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '未完成';
+    return new Date(dateString).toLocaleString('zh-TW');
+  };
+
+  const formatAccuracy = (accuracy) => {
+    if (accuracy === null || accuracy === undefined) return 'N/A';
+    return `${(accuracy * 100).toFixed(1)}%`;
+  };
+
+  const formatReactionTime = (time) => {
+    if (!time) return 'N/A';
+    return `${time}ms`;
+  };
+
+  // 分頁邏輯
+  const totalPages = Math.ceil(totalSessions / sessionsPerPage);
+  const startIndex = (currentPage - 1) * sessionsPerPage;
+  const endIndex = startIndex + sessionsPerPage;
+  const currentSessions = sessions.slice(startIndex, endIndex);
+
+  // 勾選邏輯
+  const handleSelectSession = (sessionId) => {
+    const newSelected = new Set(selectedSessions);
+    if (newSelected.has(sessionId)) {
+      newSelected.delete(sessionId);
+    } else {
+      newSelected.add(sessionId);
+    }
+    setSelectedSessions(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedSessions.size === currentSessions.length) {
+      setSelectedSessions(new Set());
+    } else {
+      setSelectedSessions(new Set(currentSessions.map(s => s.id)));
+    }
+  };
+
+  // 批量刪除
+  const handleBatchDelete = async () => {
+    if (selectedSessions.size === 0) {
+      alert('請先選擇要刪除的測試會話');
+      return;
+    }
+
+    if (!confirm(`確定要刪除 ${selectedSessions.size} 個測試會話嗎？此操作無法撤銷。`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/test-sessions/batch-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_ids: Array.from(selectedSessions)
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        setSelectedSessions(new Set());
+        fetchSessions(); // 重新加載數據
+      } else {
+        alert(data.error || '刪除失敗');
+      }
+    } catch (error) {
+      console.error('刪除失敗:', error);
+      alert('刪除失敗');
+    }
+  };
+
+  // CSV下載
+  const handleDownloadCSV = async () => {
+    if (selectedSessions.size === 0) {
+      alert('請先選擇要下載的測試會話');
+      return;
+    }
+
+    try {
+      // 獲取選中會話的完整數據
+      const selectedData = sessions.filter(s => selectedSessions.has(s.id));
+      
+      // 準備CSV數據
+      const csvRows = [];
+      
+      // CSV標題行
+      const headers = [
+        'Session ID', 'Question ID', 'Tester Name', 'Age Group', 'Gender', 
+        'Education', 'Vision Status', 'Injury Age', 'Braille Ability', 
+        'Mobility Ability', 'Drawing Frequency', 'Museum Experience',
+        'Overall Accuracy', 'Average Reaction Time', 'Finished At',
+        'Direction', 'User Answer', 'Correct Answer', 'Is Correct', 'Reaction Time (ms)'
+      ];
+      csvRows.push(headers.join(','));
+
+      // 為每個選中的會話添加行
+      selectedData.forEach(session => {
+        const baseInfo = [
+          session.id,
+          session.question_id,
+          session.tester_name || '',
+          session.tester_age_group,
+          session.tester_gender,
+          session.tester_education,
+          session.tester_vision_status,
+          session.tester_injury_age || '',
+          session.tester_braille_ability,
+          session.tester_mobility_ability,
+          session.tester_drawing_frequency,
+          session.tester_museum_experience,
+          session.overall_accuracy,
+          session.average_reaction_time,
+          session.finished_at || ''
+        ];
+
+        // 如果有回應數據，為每個方向創建一行
+        if (session.responses && Object.keys(session.responses).length > 0) {
+          Object.entries(session.responses).forEach(([direction, response]) => {
+            const row = [
+              ...baseInfo,
+              direction,
+              response.user_answer,
+              response.correct_answer,
+              response.is_correct,
+              response.reaction_time_ms
+            ];
+            csvRows.push(row.join(','));
+          });
+        } else {
+          // 如果沒有回應數據，創建一行基本信息
+          const row = [...baseInfo, '', '', '', '', ''];
+          csvRows.push(row.join(','));
+        }
+      });
+
+      // 創建並下載CSV文件
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `test_sessions_${new Date().getTime()}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('下載CSV失敗:', error);
+      alert('下載失敗');
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">載入中...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">測試結果管理</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownloadCSV}
+            disabled={selectedSessions.size === 0}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            下載CSV ({selectedSessions.size})
+          </button>
+          <button
+            onClick={handleBatchDelete}
+            disabled={selectedSessions.size === 0}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            刪除選中 ({selectedSessions.size})
+          </button>
+        </div>
+      </div>
+
+      {/* 測試會話表格 */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <input
+                  type="checkbox"
+                  checked={currentSessions.length > 0 && selectedSessions.size === currentSessions.length}
+                  onChange={handleSelectAll}
+                  className="rounded"
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Session ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Question ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                整體準確率
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                平均反應時間
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                完成時間
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentSessions.map((session) => (
+              <tr key={session.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectedSessions.has(session.id)}
+                    onChange={() => handleSelectSession(session.id)}
+                    className="rounded"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {session.id}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {session.question_id}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatAccuracy(session.overall_accuracy)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatReactionTime(session.average_reaction_time)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDateTime(session.finished_at)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 分頁控制 */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-700">
+          顯示 {startIndex + 1} 到 {Math.min(endIndex, totalSessions)} 筆，共 {totalSessions} 筆
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            上一頁
+          </button>
+          <span className="px-3 py-2 text-sm text-gray-700">
+            第 {currentPage} 頁，共 {totalPages} 頁
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            下一頁
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Results;

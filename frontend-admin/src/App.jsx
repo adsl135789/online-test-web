@@ -2,11 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import QuestionForm from './components/QuestionForm';
 import QuestionList from './components/QuestionList';
+import Results from './components/Results';
 
 function Navigation() {
   const location = useLocation();
   const isListPage = location.pathname === '/';
   const isCreatePage = location.pathname === '/create';
+  const isResultsPage = location.pathname === '/results';
 
   return (
     <nav className="flex items-center gap-4">
@@ -21,6 +23,12 @@ function Navigation() {
         className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isCreatePage ? 'bg-buff text-white' : 'bg-papaya-whip text-buff hover:bg-beige'}`}
       >
         建立新問題
+      </Link>
+      <Link 
+        to="/results"
+        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isResultsPage ? 'bg-buff text-white' : 'bg-papaya-whip text-buff hover:bg-beige'}`}
+      >
+        測試結果
       </Link>
     </nav>
   );
@@ -40,6 +48,7 @@ function AppContent() {
             <Route path="/" element={<QuestionList />} />
             <Route path="/create" element={<QuestionForm />} />
             <Route path="/edit/:id" element={<QuestionForm />} />
+            <Route path="/results" element={<Results />} />
           </Routes>
         </main>
       </div>
