@@ -15,7 +15,7 @@ const STAGE_1_CHOICES = [
 const STAGE_2_CHOICES = [
   ...STAGE_1_CHOICES,
   { value: 'C,T', label: '⬛ 🔺' }, { value: 'T,C', label: '🔺 ⬛' },
-  { value: 'C,S', label: '⬛ 🟢' }, { value: 'C,S', label: '🟢 ⬛' },
+  { value: 'C,S', label: '⬛ 🟢' }, { value: 'S,C', label: '🟢 ⬛' },
   { value: 'T,S', label: '🔺 🟢' }, { value: 'S,T', label: '🟢 🔺' }
 ];
 const DIRECTIONS = [
@@ -170,6 +170,7 @@ export default function QuestionForm() {
         y: 2 - row // y 座標：下到上 (0-2)
       };
     });
+    println(shapeCoordinates);
 
     // 生成答案
     const newAnswers = { ...answers };
