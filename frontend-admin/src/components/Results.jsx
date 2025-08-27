@@ -122,54 +122,79 @@ const Results = () => {
       // 準備CSV數據
       const csvRows = [];
       
-      // CSV標題行
+      // 輔助函數：處理包含逗點的文字
+      const sanitizeForCSV = (value) => {
+        if (value === null || value === undefined) return '';
+        return String(value).replace(/,/g, ' '); // 將逗點替換為空白符號
+      };
+      
+      // CSV標題行 - 包含八個方向的詳細欄位
       const headers = [
         'Session ID', 'Question ID', 'Tester Name', 'Age Group', 'Gender', 
         'Education', 'Vision Status', 'Injury Age', 'Braille Ability', 
         'Mobility Ability', 'Drawing Frequency', 'Museum Experience',
         'Overall Accuracy', 'Average Reaction Time', 'Finished At',
-        'Direction', 'User Answer', 'Correct Answer', 'Is Correct', 'Reaction Time (ms)'
+        // UP方向
+        'UP User Answer', 'UP Correct Answer', 'UP Is Correct', 'UP Reaction Time',
+        // DOWN方向
+        'DOWN User Answer', 'DOWN Correct Answer', 'DOWN Is Correct', 'DOWN Reaction Time',
+        // LEFT方向
+        'LEFT User Answer', 'LEFT Correct Answer', 'LEFT Is Correct', 'LEFT Reaction Time',
+        // RIGHT方向
+        'RIGHT User Answer', 'RIGHT Correct Answer', 'RIGHT Is Correct', 'RIGHT Reaction Time',
+        // NE方向
+        'NE User Answer', 'NE Correct Answer', 'NE Is Correct', 'NE Reaction Time',
+        // NW方向
+        'NW User Answer', 'NW Correct Answer', 'NW Is Correct', 'NW Reaction Time',
+        // SE方向
+        'SE User Answer', 'SE Correct Answer', 'SE Is Correct', 'SE Reaction Time',
+        // SW方向
+        'SW User Answer', 'SW Correct Answer', 'SW Is Correct', 'SW Reaction Time'
       ];
       csvRows.push(headers.join(','));
 
-      // 為每個選中的會話添加行
+      // 為每個選中的會話添加一行
       selectedData.forEach(session => {
         const baseInfo = [
           session.id,
           session.question_id,
-          session.tester_name || '',
-          session.tester_age_group,
-          session.tester_gender,
-          session.tester_education,
-          session.tester_vision_status,
-          session.tester_injury_age || '',
-          session.tester_braille_ability,
-          session.tester_mobility_ability,
-          session.tester_drawing_frequency,
-          session.tester_museum_experience,
+          sanitizeForCSV(session.tester_name),
+          sanitizeForCSV(session.tester_age_group),
+          sanitizeForCSV(session.tester_gender),
+          sanitizeForCSV(session.tester_education),
+          sanitizeForCSV(session.tester_vision_status),
+          sanitizeForCSV(session.tester_injury_age),
+          sanitizeForCSV(session.tester_braille_ability),
+          sanitizeForCSV(session.tester_mobility_ability),
+          sanitizeForCSV(session.tester_drawing_frequency),
+          sanitizeForCSV(session.tester_museum_experience),
           session.overall_accuracy,
           session.average_reaction_time,
-          session.finished_at || ''
+          sanitizeForCSV(session.finished_at)
         ];
 
-        // 如果有回應數據，為每個方向創建一行
-        if (session.responses && Object.keys(session.responses).length > 0) {
-          Object.entries(session.responses).forEach(([direction, response]) => {
-            const row = [
-              ...baseInfo,
-              direction,
-              response.user_answer,
-              response.correct_answer,
-              response.is_correct,
-              response.reaction_time_ms
-            ];
-            csvRows.push(row.join(','));
-          });
-        } else {
-          // 如果沒有回應數據，創建一行基本信息
-          const row = [...baseInfo, '', '', '', '', ''];
-          csvRows.push(row.join(','));
-        }
+        // 準備八個方向的資料
+        const directions = ['up', 'down', 'left', 'right', 'ne', 'nw', 'se', 'sw'];
+        const directionsData = [];
+        
+        directions.forEach(direction => {
+          const response = session.responses?.[direction];
+          if (response) {
+            directionsData.push(
+              sanitizeForCSV(response.user_answer),
+              sanitizeForCSV(response.correct_answer),
+              response.is_correct || '',
+              response.reaction_time_ms || ''
+            );
+          } else {
+            // 如果沒有該方向的資料，填入空值
+            directionsData.push('', '', '', '');
+          }
+        });
+
+        // 組合成一行
+        const row = [...baseInfo, ...directionsData];
+        csvRows.push(row.join(','));
       });
 
       // 創建並下載CSV文件
