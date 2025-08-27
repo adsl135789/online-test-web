@@ -171,6 +171,14 @@ export default function QuestionForm() {
       };
     });
 
+    // 印出座標資訊供除錯
+    console.log('物體位置資訊：');
+    console.log('positions:', positions);
+    console.log('shapeCoordinates:', shapeCoordinates);
+    Object.entries(shapeCoordinates).forEach(([shape, coords]) => {
+      console.log(`${SHAPES[shape].name} (${SHAPES[shape].symbol}): x=${coords.x}, y=${coords.y}`);
+    });
+
     // 生成答案
     const newAnswers = { ...answers };
     const shapes = Object.keys(SHAPES);
@@ -178,18 +186,22 @@ export default function QuestionForm() {
     // 下: 根據 x 座標由小到大排列 (從左到右)
     const downOrder = [...shapes].sort((a, b) => shapeCoordinates[a].x - shapeCoordinates[b].x);
     newAnswers.answer_down = downOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
+    console.log('下方向 (x座標小到大):', downOrder.map(s => `${SHAPES[s].symbol}(${shapeCoordinates[s].x})`).join(' → '), '=', newAnswers.answer_down);
     
     // 右: 根據 y 座標由小到大排列 (從下到上)
     const rightOrder = [...shapes].sort((a, b) => shapeCoordinates[a].y - shapeCoordinates[b].y);
     newAnswers.answer_right = rightOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
+    console.log('右方向 (y座標小到大):', rightOrder.map(s => `${SHAPES[s].symbol}(${shapeCoordinates[s].y})`).join(' → '), '=', newAnswers.answer_right);
     
     // 上: 根據 x 座標由大到小排列 (從右到左)
     const upOrder = [...shapes].sort((a, b) => shapeCoordinates[b].x - shapeCoordinates[a].x);
     newAnswers.answer_up = upOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
+    console.log('上方向 (x座標大到小):', upOrder.map(s => `${SHAPES[s].symbol}(${shapeCoordinates[s].x})`).join(' → '), '=', newAnswers.answer_up);
     
     // 左: 根據 y 座標由大到小排列 (從上到下)
     const leftOrder = [...shapes].sort((a, b) => shapeCoordinates[b].y - shapeCoordinates[a].y);
     newAnswers.answer_left = leftOrder.map(shape => shape.charAt(0).toUpperCase()).join(',');
+    console.log('左方向 (y座標大到小):', leftOrder.map(s => `${SHAPES[s].symbol}(${shapeCoordinates[s].y})`).join(' → '), '=', newAnswers.answer_left);
 
     setAnswers(newAnswers);
     setStatus({ loading: false, error: null, success: '基本答案已自動生成！' });
