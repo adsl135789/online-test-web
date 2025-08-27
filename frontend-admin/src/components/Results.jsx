@@ -168,7 +168,7 @@ const Results = () => {
           sanitizeForCSV(session.tester_mobility_ability),
           sanitizeForCSV(session.tester_drawing_frequency),
           sanitizeForCSV(session.tester_museum_experience),
-          session.overall_accuracy,
+          session.overall_accuracy ? session.overall_accuracy.toFixed(2) : '',
           session.average_reaction_time,
           sanitizeForCSV(session.finished_at)
         ];
@@ -183,7 +183,7 @@ const Results = () => {
             directionsData.push(
               sanitizeForCSV(response.user_answer),
               sanitizeForCSV(response.correct_answer),
-              response.is_correct || '',
+              response.is_correct,
               response.reaction_time_ms || ''
             );
           } else {
