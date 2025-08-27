@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://54.174.181.192';
 
 // const API_BASE_URL = 'http://localhost'; // 本地開發環境
 
-const SYMBOL_MAP = { 'S': '⬛', 'T': '🔺', 'C': '🟢' };
+const SYMBOL_MAP = { 'C': '⬛', 'T': '🔺', 'S': '🟢' };
 
 function formatAnswer(answerStr) {
   if (!answerStr) return 'N/A';
@@ -32,7 +33,8 @@ const AnswerGrid = ({ q }) => {
   );
 };
 
-export default function QuestionList({ setPage, setEditingId }) {
+export default function QuestionList() {
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,10 +69,9 @@ export default function QuestionList({ setPage, setEditingId }) {
     }
   };
   
-  // --- 新增 ---
+  // --- 修改編輯函數 ---
   const handleEdit = (id) => {
-    setEditingId(id); // 設定要編輯的 ID
-    setPage('form');   // 切換到表單頁面
+    navigate(`/edit/${id}`);
   };
 
   const filteredQuestions = questions.filter(q => {

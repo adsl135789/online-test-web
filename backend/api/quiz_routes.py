@@ -96,7 +96,8 @@ def submit_answer(session_id):
             direction=direction,
             user_answer=data['answer'],
             reaction_time_ms=data['time_ms'],
-            is_correct=is_correct
+            is_correct=is_correct,
+            correct_answer=correct_answer
         )
         db.session.add(new_response)
         db.session.commit()

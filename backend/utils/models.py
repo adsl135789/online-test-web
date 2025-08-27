@@ -62,5 +62,6 @@ class Response(db.Model):
     test_session_id = db.Column(db.Integer, db.ForeignKey('test_sessions.id'), nullable=False)
     direction = db.Column(db.String(50))
     user_answer = db.Column(db.String(100))
+    correct_answer = db.Column(db.String(100))
     is_correct = db.Column(db.Boolean)
     reaction_time_ms = db.Column(db.Integer)

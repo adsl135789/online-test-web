@@ -8,7 +8,7 @@ import { imageCache } from './InstructionPage';
 const API_BASE_URL = 'http://54.174.181.192';
 
 // 符號對應表
-const SYMBOL_MAP = { 'S': '■', 'T': '▲', 'C': '●' };
+const SYMBOL_MAP = { 'C': '■', 'T': '▲', 'S': '●' };
 
 // 方向到箭頭的對應表
 const DIRECTION_ARROW_MAP = {
@@ -144,7 +144,7 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
       const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/${sessionData.session_id}/answer`, {
         direction: sessionData.question_order[currentQuestionIndex],
         answer: selectedAnswer,
-        time_ms: time,
+        time_ms: time
       });
       setIsCorrect(response.data.is_correct);
       setCorrectAnswer(response.data.correct_answer);

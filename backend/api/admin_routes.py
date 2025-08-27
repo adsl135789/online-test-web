@@ -10,7 +10,7 @@ from utils.extensions import db
 admin_api_bp = Blueprint('admin_api', __name__, url_prefix='/api/admin')
 
 # 允許的圖片副檔名
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -111,7 +111,8 @@ def get_question(question_id):
     """獲取單一問題的詳細資料"""
     q = Question.query.get_or_404(question_id)
     result = {
-        "id": q.id, "image_path": q.image_path,
+        "id": q.id, 
+        "image_path": q.image_path,
         "square_x": q.square_x, "square_y": q.square_y,
         "triangle_x": q.triangle_x, "triangle_y": q.triangle_y,
         "circle_x": q.circle_x, "circle_y": q.circle_y,
@@ -169,6 +170,7 @@ def create_question():
     # --- 3. 處理其他表單資料 ---
     try:
         new_question = Question(
+            id=int(filename_without_ext) if filename_without_ext.isdigit() else None,
             image_path=db_image_path,
             square_x=request.form.get('square_x', type=int),
             square_y=request.form.get('square_y', type=int),

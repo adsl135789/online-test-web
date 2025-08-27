@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://54.174.181.192';
@@ -7,15 +8,15 @@ const API_BASE_URL = 'http://54.174.181.192';
 
 // --- 常數定義 ---
 const STAGE_1_CHOICES = [
-  { value: 'S,T,C', label: '⬛ 🔺 🟢' }, { value: 'S,C,T', label: '⬛ 🟢 🔺' },
-  { value: 'T,S,C', label: '🔺 ⬛ 🟢' }, { value: 'T,C,S', label: '🔺 🟢 ⬛' },
-  { value: 'C,S,T', label: '🟢 ⬛ 🔺' }, { value: 'C,T,S', label: '🟢 🔺 ⬛' }
+  { value: 'C,T,S', label: '⬛ 🔺 🟢' }, { value: 'C,S,T', label: '⬛ 🟢 🔺' },
+  { value: 'T,C,S', label: '🔺 ⬛ 🟢' }, { value: 'T,S,C', label: '🔺 🟢 ⬛' },
+  { value: 'S,C,T', label: '🟢 ⬛ 🔺' }, { value: 'S,T,C', label: '🟢 🔺 ⬛' }
 ];
 const STAGE_2_CHOICES = [
   ...STAGE_1_CHOICES,
-  { value: 'S,T', label: '⬛ 🔺' }, { value: 'T,S', label: '🔺 ⬛' },
-  { value: 'S,C', label: '⬛ 🟢' }, { value: 'C,S', label: '🟢 ⬛' },
-  { value: 'T,C', label: '🔺 🟢' }, { value: 'C,T', label: '🟢 🔺' }
+  { value: 'C,T', label: '⬛ 🔺' }, { value: 'T,C', label: '🔺 ⬛' },
+  { value: 'C,S', label: '⬛ 🟢' }, { value: 'C,S', label: '🟢 ⬛' },
+  { value: 'T,S', label: '🔺 🟢' }, { value: 'S,T', label: '🟢 🔺' }
 ];
 const DIRECTIONS = [
   { key: 'answer_down', label: '答案 (下)', choices: STAGE_1_CHOICES },
@@ -33,8 +34,10 @@ const SHAPES = {
   circle: { symbol: '🟢', name: '球體' },
 };
 
-export default function QuestionForm({ editingId, setPage, setEditingId }) {
-  const isEditing = editingId !== null;
+export default function QuestionForm() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditing = id !== undefined;
 
   // --- State Management ---
   const [image, setImage] = useState(null);
@@ -45,13 +48,26 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
   const [draggedItem, setDraggedItem] = useState(null);
   const fileInputRef = useRef(null);
 
+  // --- Reset form when switching from edit to create mode ---
+  useEffect(() => {
+    if (!isEditing) {
+      // 重置所有狀態到初始值
+      setImage(null);
+      setImagePreview('');
+      setPositions({ square: null, triangle: null, circle: null });
+      setAnswers(DIRECTIONS.reduce((acc, dir) => ({ ...acc, [dir.key]: '' }), {}));
+      setStatus({ loading: false, error: null, success: null });
+      setDraggedItem(null);
+    }
+  }, [isEditing]);
+
   // --- Data Fetching for Edit Mode ---
   useEffect(() => {
     if (isEditing) {
       const fetchQuestionData = async () => {
         setStatus({ loading: true, error: null, success: null });
         try {
-          const response = await axios.get(`${API_BASE_URL}:5000/api/admin/questions/${editingId}`);
+          const response = await axios.get(`${API_BASE_URL}:5000/api/admin/questions/${id}`);
           const data = response.data;
           
           const initialAnswers = {};
@@ -79,7 +95,7 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
       };
       fetchQuestionData();
     }
-  }, [editingId, isEditing]);
+  }, [id, isEditing]);
 
   // --- Event Handlers ---
   const handleImageChange = (e) => {
@@ -224,7 +240,7 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
 
     try {
       const url = isEditing
-        ? `${API_BASE_URL}:5000/api/admin/questions/${editingId}`
+        ? `${API_BASE_URL}:5000/api/admin/questions/${id}`
         : `${API_BASE_URL}:5000/api/admin/questions`;
       const method = isEditing ? 'put' : 'post';
       
@@ -232,8 +248,7 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
       
       setStatus({ loading: false, error: null, success: response.data.message });
       setTimeout(() => {
-        setPage('list');
-        setEditingId(null);
+        navigate('/');
       }, 1500);
 
     } catch (error) {
@@ -242,14 +257,13 @@ export default function QuestionForm({ editingId, setPage, setEditingId }) {
   };
   
   const handleCancel = () => {
-    setPage('list');
-    setEditingId(null);
+    navigate('/');
   };
 
   return (
     <div className="bg-papaya-whip rounded-2xl shadow-lg p-8 sm:p-12 border border-beige">
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-8 border-b-2 border-beige pb-4">
-            {isEditing ? `編輯問題 #${editingId}` : '建立新問題'}
+            {isEditing ? `編輯問題 #${id}` : '建立新問題'}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
