@@ -10,7 +10,7 @@ export default function App() {
   const [sessionData, setSessionData] = useState(null);
   const [currentStage, setCurrentStage] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [questionCoordinates, setQuestionCoordinates] = useState(null);
+  const [questionCoordinates, setQuestionCoordinates] = useState({});
 
   return (
     <Routes>

@@ -8,6 +8,9 @@ const API_BASE_URL = 'http://54.174.181.192';
 
 // const API_BASE_URL = 'http://localhost'; // 本地開發環境
 
+// 圖片快取對象
+export const imageCache = {};
+
 export default function UserInfoPage({ setSessionData }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -45,12 +48,10 @@ export default function UserInfoPage({ setSessionData }) {
     setStatus({ loading: true, error: null });
     try {
       const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/start`, formData);
-      setSessionData(response.data);
+      const sessionData = response.data;
       
-      // 添加短暫延遲以確保 sessionData 狀態更新完成
-      setTimeout(() => {
-        navigate('/instruction');
-      }, 100);
+      setSessionData(sessionData);
+      navigate('/instruction'); // 修改跳轉目標為instruction頁面
     } catch (err) {
       setStatus({ loading: false, error: err.response?.data?.error || t('startTestError') });
       console.error(err);
@@ -278,7 +279,7 @@ export default function UserInfoPage({ setSessionData }) {
               disabled={status.loading} 
               className="w-full bg-buff hover:bg-opacity-90 text-white text-xl font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg disabled:bg-gray-400"
             >
-              {status.loading ? t('preparing') + '...' : t('startQuiz')}
+              {status.loading ? t('preparing') : t('startQuiz')}
             </button>
             {status.error && (
               <p className="mt-4 text-center text-red-500">{status.error}</p>

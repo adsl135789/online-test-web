@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { imageCache } from './UserInfoPage';
 
 // const API_BASE_URL = 'http://localhost'; // 本地開發環境
 const API_BASE_URL = 'http://54.174.181.192';
-
-// 圖片快取對象
-const imageCache = {};
 
 export default function InstructionPage({ sessionData, currentStage, setCurrentStage, setQuestionCoordinates }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [initializationComplete, setInitializationComplete] = useState(false);
 
   // 路由保護 - 如果沒有 sessionData 則跳轉到首頁
   useEffect(() => {
@@ -20,8 +17,6 @@ export default function InstructionPage({ sessionData, currentStage, setCurrentS
       navigate('/');
       return;
     }
-    // 當 sessionData 存在時，立即開始初始化
-    initializeQuizData();
   }, [sessionData, navigate]);
 
   // 預載入圖片的函式
@@ -55,48 +50,43 @@ export default function InstructionPage({ sessionData, currentStage, setCurrentS
     }
   };
 
-  // 新增：初始化測驗資料的函式
-  const initializeQuizData = async () => {
-    if (!sessionData) return;
+  // 預載入圖片並存儲座標資訊
+  useEffect(() => {
+    const preloadStageImages = async () => {
+      if (!sessionData || !sessionData.question_image) return;
 
-    try {
-      setIsLoading(true);
-      
-      // 1. 先初始化座標資訊
-      if (setQuestionCoordinates && sessionData.square_x !== undefined) {
-        const coordinates = {
-          square_x: sessionData.square_x,
-          square_y: sessionData.square_y,
-          triangle_x: sessionData.triangle_x,
-          triangle_y: sessionData.triangle_y,
-          circle_x: sessionData.circle_x,
-          circle_y: sessionData.circle_y
-        };
-        setQuestionCoordinates(coordinates);
-        console.log('座標初始化完成:', coordinates);
-      }
-      
-      // 2. 預載入圖片並更新快取
-      if (sessionData.question_image) {
-        const imageUrl = await preloadImage(sessionData.question_image);
-        if (imageUrl) {
-          console.log('圖片預載入完成:', imageUrl);
+      try {
+        setIsLoading(true);
+        
+        // 直接使用 sessionData 中的 question_image 進行預載入
+        await preloadImage(sessionData.question_image);
+        
+        // 存儲物件座標資訊
+        if (setQuestionCoordinates && sessionData.square_x !== undefined) {
+          const coordinates = {
+            square_x: sessionData.square_x,
+            square_y: sessionData.square_y,
+            triangle_x: sessionData.triangle_x,
+            triangle_y: sessionData.triangle_y,
+            circle_x: sessionData.circle_x,
+            circle_y: sessionData.circle_y
+          };
+          setQuestionCoordinates(coordinates);
         }
+        
+      } catch (error) {
+        console.error('預載入圖片失敗:', error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setInitializationComplete(true);
-    } catch (error) {
-      console.error('初始化失敗:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    preloadStageImages();
+  }, [sessionData, setQuestionCoordinates]);
 
   const handleContinue = () => {
-    // 確保初始化完成後才允許繼續
-    if (initializationComplete) {
-      navigate('/quiz');
-    }
+    // 跳轉到quiz頁面，currentStage已經在App.jsx中管理
+    navigate('/quiz');
   };
 
   if (!sessionData) return null; // 路由保護
@@ -130,13 +120,11 @@ export default function InstructionPage({ sessionData, currentStage, setCurrentS
             <div className="space-y-4">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-buff"></div>
               <p className="text-lg text-gray-600">{t('preparingImages')}</p>
-              <p className="text-sm text-gray-500">正在初始化測驗資料...</p>
             </div>
           ) : (
             <button
               onClick={handleContinue}
-              disabled={!initializationComplete}
-              className="bg-buff hover:bg-opacity-90 text-white text-2xl font-bold py-4 px-12 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="bg-buff hover:bg-opacity-90 text-white text-2xl font-bold py-4 px-12 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
             >
               {t('startStage')}
             </button>
@@ -147,5 +135,3 @@ export default function InstructionPage({ sessionData, currentStage, setCurrentS
   );
 }
 
-// 導出imageCache供其他組件使用
-export { imageCache };
