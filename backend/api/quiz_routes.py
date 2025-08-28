@@ -1,6 +1,6 @@
 # backend/api/quiz_routes.py
 import random
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from sqlalchemy.sql.expression import func
 from utils.models import Question, TestSession, Response
@@ -130,7 +130,9 @@ def get_quiz_result(session_id):
     try:
         session.overall_accuracy = round(accuracy, 4)  # 保留兩位小數
         session.average_reaction_time = avg_time_ms
-        session.finished_at = datetime.utcnow()
+        # 設定時區為 UTC+8
+        utc_plus_8 = timezone(timedelta(hours=8))
+        session.finished_at = datetime.now(utc_plus_8)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
