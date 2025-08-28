@@ -80,6 +80,7 @@ export default function UserInfoPage({ setSessionData }) {
       return null;
     }
   };
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault();
