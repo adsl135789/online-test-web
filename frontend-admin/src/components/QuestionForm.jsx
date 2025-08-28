@@ -90,7 +90,7 @@ export default function QuestionForm() {
           }
           setStatus({ loading: false, error: null, success: null });
         } catch (error) {
-          setStatus({ loading: false, error: '無法載入問題資料', success: null });
+          setStatus({ loading: false, error: '無法載入題目資料', success: null });
         }
       };
       fetchQuestionData();
@@ -216,7 +216,7 @@ export default function QuestionForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isEditing && !image) {
-      setStatus({ loading: false, error: '建立新問題時，必須上傳參考圖片。', success: null });
+      setStatus({ loading: false, error: '建立新題目時，必須上傳參考圖片。', success: null });
       return;
     }
     if (Object.values(positions).some(pos => pos === null)) {
@@ -275,7 +275,7 @@ export default function QuestionForm() {
   return (
     <div className="bg-papaya-whip rounded-2xl shadow-lg p-8 sm:p-12 border border-beige">
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-8 border-b-2 border-beige pb-4">
-            {isEditing ? `編輯問題 #${id}` : '建立新問題'}
+            {isEditing ? `編輯題目 #${id}` : '建立新題目'}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -412,7 +412,7 @@ export default function QuestionForm() {
                         取消
                     </button>
                     <button type="submit" disabled={status.loading} className="bg-buff hover:bg-opacity-90 text-white text-xl font-bold py-3 px-8 rounded-lg focus:outline-none focus:ring-4 focus:ring-buff focus:ring-opacity-50 disabled:bg-gray-400 transition-all duration-300 shadow-md hover:shadow-lg">
-                        {status.loading ? '儲存中...' : (isEditing ? '儲存變更' : '建立問題')}
+                        {status.loading ? '儲存中...' : (isEditing ? '儲存變更' : '建立題目')}
                     </button>
                 </div>
                 {status.error && <p className="mt-4 text-red-600 bg-red-100 border border-red-400 rounded-md p-3 text-base">{status.error}</p>}

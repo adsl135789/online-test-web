@@ -22,7 +22,7 @@ function Navigation() {
         to="/create"
         className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isCreatePage ? 'bg-buff text-white' : 'bg-papaya-whip text-buff hover:bg-beige'}`}
       >
-        建立新問題
+        建立新題目
       </Link>
       <Link 
         to="/results"

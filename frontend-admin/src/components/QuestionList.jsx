@@ -48,7 +48,7 @@ export default function QuestionList() {
       setQuestions(response.data);
       setError(null);
     } catch (err) {
-      setError('無法載入問題列表，請稍後再試。');
+      setError('無法載入題目列表，請稍後再試。');
       console.error(err);
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ export default function QuestionList() {
   useEffect(() => { fetchQuestions(); }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm(`您確定要刪除問題 #${id} 嗎？此操作無法復原。`)) {
+    if (window.confirm(`您確定要刪除題目 #${id} 嗎？此操作無法復原。`)) {
       try {
         await axios.delete(`${API_BASE_URL}:5000/api/admin/questions/${id}`);
         fetchQuestions();
@@ -220,7 +220,7 @@ export default function QuestionList() {
                   className="w-4 h-4 flex-shrink-0"
                 />
                 
-                <h3 className="font-bold text-base text-gray-800">問題 #{q.id}</h3>
+                <h3 className="font-bold text-base text-gray-800">題目 #{q.id}</h3>
                 
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ml-auto ${
                   q.is_active 
@@ -235,7 +235,7 @@ export default function QuestionList() {
               <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-beige overflow-hidden">
                 <img 
                   src={`${API_BASE_URL}:5000/static/${q.image_path}`} 
-                  alt={`問題 ${q.id} 的圖片`} 
+                  alt={`題目 ${q.id} 的圖片`} 
                   className="max-w-full max-h-full object-contain" 
                 />
               </div>

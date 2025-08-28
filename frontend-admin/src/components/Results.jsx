@@ -26,7 +26,7 @@ const Results = () => {
         setTotalSessions(data.total_sessions);
       }
     } catch (error) {
-      console.error('獲取測試會話失敗:', error);
+      console.error('獲取測試紀錄失敗:', error);
     } finally {
       setLoading(false);
     }
@@ -75,11 +75,11 @@ const Results = () => {
   // 批量刪除
   const handleBatchDelete = async () => {
     if (selectedSessions.size === 0) {
-      alert('請先選擇要刪除的測試會話');
+      alert('請先選擇要刪除的測試紀錄');
       return;
     }
 
-    if (!confirm(`確定要刪除 ${selectedSessions.size} 個測試會話嗎？此操作無法撤銷。`)) {
+    if (!confirm(`確定要刪除 ${selectedSessions.size} 個測驗紀錄嗎？`)) {
       return;
     }
 
@@ -111,12 +111,12 @@ const Results = () => {
   // CSV下載
   const handleDownloadCSV = async () => {
     if (selectedSessions.size === 0) {
-      alert('請先選擇要下載的測試會話');
+      alert('請先選擇要下載的測驗紀錄');
       return;
     }
 
     try {
-      // 獲取選中會話的完整數據
+      // 獲取選中紀錄的完整數據
       const selectedData = sessions.filter(s => selectedSessions.has(s.id));
       
       // 準備CSV數據
@@ -153,7 +153,7 @@ const Results = () => {
       ];
       csvRows.push(headers.join(','));
 
-      // 為每個選中的會話添加一行
+      // 為每個選中的紀錄添加一行
       selectedData.forEach(session => {
         const baseInfo = [
           session.id,
@@ -238,12 +238,12 @@ const Results = () => {
             disabled={selectedSessions.size === 0}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            刪除選中 ({selectedSessions.size})
+            刪除 ({selectedSessions.size})
           </button>
         </div>
       </div>
 
-      {/* 測試會話表格 */}
+      {/* 測試紀錄表格 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

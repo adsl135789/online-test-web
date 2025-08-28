@@ -171,34 +171,34 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
   const getQuestionPrompt = () => {
     const directionTexts = {
       zh: {
-        'left': '→三個物體的正左方位置',
-        'up': '↑三個物體的正前方位置',
-        'right': '←三個物體的正右方位置',
-        'down': '↓三個物體的正後方位置',
-        'ne': '↙三個物體的正左邊位置',
-        'se': '↖三個物體的正前方位置',
-        'sw': '↗三個物體的正左邊位置',
-        'nw': '↘三個物體的正前方位置'
+        'left': '→ 三個物體的正左方位置',
+        'up': '↑ 三個物體的正前方位置',
+        'right': '← 三個物體的正右方位置',
+        'down': '↓ 三個物體的正後方位置',
+        'ne': '↙ 三個物體的正右上角位置',
+        'se': '↖ 三個物體的正右下角位置',
+        'sw': '↗ 三個物體的正左下角位置',
+        'nw': '↘ 三個物體的正左上角位置'
       },
       en: {
-        'left': '→directly to the left of the three objects',
-        'up': '↑directly in front of the three objects',
-        'right': '←directly to the right of the three objects',
-        'down': '↓directly behind the three objects',
-        'ne': '↙to the left side of the three objects',
-        'se': '↖in front of the three objects',
-        'sw': '↗to the left side of the three objects',
-        'nw': '↘in front of the three objects'
+        'left': '→ directly to the left of the three objects',
+        'up': '↑ directly in front of the three objects',
+        'right': '← directly to the right of the three objects',
+        'down': '↓ directly behind the three objects',
+        'ne': '↙ The top-right corner position of three objects',
+        'se': '↖ The bottom-right corner position of three objects',
+        'sw': '↗ The bottom-left corner position of three objects',
+        'nw': '↘ The top-left corner position of three objects'
       },
       ja: {
-        'left': '→三つの物体の真左の位置',
-        'up': '↑三つの物体の真正面の位置',
-        'right': '←三つの物体の真右の位置',
-        'down': '↓三つの物体の真後ろの位置',
-        'ne': '↙三つの物体の左側の位置',
-        'se': '↖三つの物体の正面の位置',
-        'sw': '↗三つの物体の左側の位置',
-        'nw': '↘三つの物体の正面の位置'
+        'left': '→ 3つのオブジェクトの真左',
+        'up': '↑ 3つのオブジェクトの真前',
+        'right': '← 3つのオブジェクトの真右',
+        'down': '↓ 3つのオブジェクトの真後ろ',
+        'ne': '↙ 3つのオブジェクトの右上隅の位置',
+        'se': '↖ 三つのオブジェクトの右下隅の位置',
+        'sw': '↗ 三つのオブジェクトの左下隅の位置',
+        'nw': '↘ 三つのオブジェクトの左上隅の位置'
       }
     };
 
