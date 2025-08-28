@@ -13,8 +13,7 @@ export default function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionCoordinates, setQuestionCoordinates] = useState({});
 
-  // 如果需要，可以在適當的時機調用清理函式
-  // 例如在重新開始測驗時
+  // 完整重置應用程式
   const resetApp = () => {
     clearImageCache();
     clearQuestionCoordinates(setQuestionCoordinates);
@@ -26,7 +25,18 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/user-info" element={<UserInfoPage setSessionData={setSessionData} />} />
+      <Route 
+        path="/user-info" 
+        element={
+          <UserInfoPage 
+            setSessionData={setSessionData}
+            setCurrentStage={setCurrentStage}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            setQuestionCoordinates={setQuestionCoordinates}
+            resetApp={resetApp}
+          />
+        } 
+      />
       <Route 
         path="/instruction" 
         element={
