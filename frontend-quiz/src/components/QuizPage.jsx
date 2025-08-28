@@ -7,8 +7,46 @@ import { imageCache } from './UserInfoPage';
 // const API_BASE_URL = 'http://localhost'; // 本地開發環境
 const API_BASE_URL = 'http://54.174.181.192';
 
-// 符號對應表
-const SYMBOL_MAP = { 'C': '■', 'T': '▲', 'S': '●' };
+// SVG 圖形組件
+const ShapeIcon = ({ type, size = 24 }) => {
+  const commonProps = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    className: "inline-block"
+  };
+
+  switch (type) {
+    case 'C': // 正方形
+      return (
+        <svg {...commonProps}>
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="currentColor" />
+        </svg>
+      );
+    case 'T': // 三角形
+      return (
+        <svg {...commonProps}>
+          <path 
+            d="M12,4 L20,20 L4,20 Z" 
+            fill="currentColor" 
+            stroke="currentColor" 
+            strokeLinejoin="round" 
+            strokeLinecap="round" 
+            strokeWidth="2"
+            rx="3"
+          />
+        </svg>
+      );
+    case 'S': // 圓形
+      return (
+        <svg {...commonProps}>
+          <circle cx="12" cy="12" r="9" fill="currentColor" />
+        </svg>
+      );
+    default:
+      return <span>{type}</span>;
+  }
+};
 
 // 方向到箭頭的對應表
 const DIRECTION_ARROW_MAP = {
@@ -24,15 +62,31 @@ const DIRECTION_ARROW_MAP = {
 
 function formatOption(optionStr) {
   if (!optionStr) return ''; // 如果傳入的值是 null 或 undefined，直接回傳空字串
-  return optionStr.split(',').map(char => {
-    const symbol = SYMBOL_MAP[char] || char;
-    // 如果是正方形，用span包裹並加上較大的樣式
-    if (symbol === '■') {
-      return `<span class="text-4xl">${symbol}</span>`;
+  
+  const elements = optionStr.split(',').map((char, index) => {
+    if (['C', 'T', 'S'].includes(char)) {
+      return `<span key="${index}" class="inline-flex items-center justify-center mx-1" data-shape="${char}"></span>`;
     }
-    return symbol;
-  }).join(' ');
+    return char;
+  });
+  
+  return elements.join(' ');
 }
+
+// 渲染選項中的 SVG 圖形
+const renderOptionWithShapes = (optionStr) => {
+  if (!optionStr) return '';
+  
+  return optionStr.split(',').map((char, index) => (
+    <span key={index} className="inline-flex items-center justify-center mx-1">
+      {['C', 'T', 'S'].includes(char) ? (
+        <ShapeIcon type={char} size={32} />
+      ) : (
+        char
+      )}
+    </span>
+  ));
+};
 
 // 根據階段生成選項
 function generateOptions(direction) {
@@ -276,19 +330,18 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
                     // 使用questionCoordinates資料
                     if (questionCoordinates?.square_x !== undefined && questionCoordinates?.square_y !== undefined &&
                         Number(questionCoordinates.square_x) === cartesianX && Number(questionCoordinates.square_y) === cartesianY) {
-                      objectSymbol = '■';
-                      symbolClass = 'text-5xl'; // 正方形使用更大的字體
+                      objectSymbol = <ShapeIcon type="C" size={40} />;
                     } else if (questionCoordinates?.triangle_x !== undefined && questionCoordinates?.triangle_y !== undefined &&
                                Number(questionCoordinates.triangle_x) === cartesianX && Number(questionCoordinates.triangle_y) === cartesianY) {
-                      objectSymbol = '▲';
+                      objectSymbol = <ShapeIcon type="T" size={40} />;
                     } else if (questionCoordinates?.circle_x !== undefined && questionCoordinates?.circle_y !== undefined &&
                                Number(questionCoordinates.circle_x) === cartesianX && Number(questionCoordinates.circle_y) === cartesianY) {
-                      objectSymbol = '●';
+                      objectSymbol = <ShapeIcon type="S" size={40} />;
                     }
                     
                     return (
                       <div key={index} className="w-12 h-12 flex items-center justify-center bg-cornsilk rounded border-2 border-beige relative">
-                        <span className={`${symbolClass} leading-none flex items-center justify-center`}>{objectSymbol}</span>
+                        <div className="flex items-center justify-center">{objectSymbol}</div>
                       </div>
                     );
                   } else {
@@ -371,8 +424,11 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
                 onClick={() => !isSubmitted && setSelectedAnswer(option)}
                 disabled={isSubmitted}
                 className={`p-4 rounded-lg text-2xl font-bold transition-all duration-200 ${buttonClass}`}
-                dangerouslySetInnerHTML={{ __html: formatOption(option) }}
-              />
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  {renderOptionWithShapes(option)}
+                </div>
+              </button>
             );
           })}
         </div>
@@ -391,7 +447,9 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
                 ) : (
                   <p className="text-2xl font-bold text-red-600">
                     {t('incorrect').replace('{answer}', '')}
-                    <span dangerouslySetInnerHTML={{ __html: formatOption(correctAnswer) }} />
+                    <span className="inline-flex items-center space-x-2 ml-2">
+                      {renderOptionWithShapes(correctAnswer)}
+                    </span>
                   </p>
                 )}
                 <button onClick={handleNextQuestion} className="bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-3 px-12 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">

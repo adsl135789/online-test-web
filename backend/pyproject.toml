@@ -11,4 +11,5 @@ dependencies = [
     "psycopg[binary]>=3.2.3",
     "python-dotenv>=1.0.1",
     "flask-migrate>=4.1.0",
+    "pytz>=2025.2",
 ]
