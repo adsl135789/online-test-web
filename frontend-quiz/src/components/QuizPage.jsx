@@ -172,9 +172,9 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
     const directionTexts = {
       zh: {
         'left': '→ 三個物體的正左方位置',
-        'up': '↑ 三個物體的正前方位置',
+        'down': '↑ 三個物體的正前方位置',
         'right': '← 三個物體的正右方位置',
-        'down': '↓ 三個物體的正後方位置',
+        'up': '↓ 三個物體的正後方位置',
         'ne': '↙ 三個物體的正右上角位置',
         'se': '↖ 三個物體的正右下角位置',
         'sw': '↗ 三個物體的正左下角位置',
@@ -182,9 +182,9 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
       },
       en: {
         'left': '→ directly to the left of the three objects',
-        'up': '↑ directly in front of the three objects',
+        'down': '↑ directly in front of the three objects',
         'right': '← directly to the right of the three objects',
-        'down': '↓ directly behind the three objects',
+        'up': '↓ directly behind the three objects',
         'ne': '↙ The top-right corner position of three objects',
         'se': '↖ The bottom-right corner position of three objects',
         'sw': '↗ The bottom-left corner position of three objects',
@@ -192,9 +192,9 @@ export default function QuizPage({ sessionData, currentStage, setCurrentStage, c
       },
       ja: {
         'left': '→ 3つのオブジェクトの真左',
-        'up': '↑ 3つのオブジェクトの真前',
+        'down': '↑ 3つのオブジェクトの真前',
         'right': '← 3つのオブジェクトの真右',
-        'down': '↓ 3つのオブジェクトの真後ろ',
+        'up': '↓ 3つのオブジェクトの真後ろ',
         'ne': '↙ 3つのオブジェクトの右上隅の位置',
         'se': '↖ 三つのオブジェクトの右下隅の位置',
         'sw': '↗ 三つのオブジェクトの左下隅の位置',

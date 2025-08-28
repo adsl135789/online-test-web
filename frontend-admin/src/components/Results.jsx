@@ -39,7 +39,7 @@ const Results = () => {
 
   const formatAccuracy = (accuracy) => {
     if (accuracy === null || accuracy === undefined) return 'N/A';
-    return `${(accuracy * 100).toFixed(1)}%`;
+    return `${(accuracy * 100).toFixed(2)}%`;
   };
 
   const formatReactionTime = (time) => {
