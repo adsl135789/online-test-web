@@ -263,10 +263,10 @@ const Results = () => {
                 Question ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                整體準確率
+                整體準確率 
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                平均反應時間
+                平均反應時間 (ms)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 完成時間

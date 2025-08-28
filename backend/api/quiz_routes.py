@@ -123,12 +123,12 @@ def get_quiz_result(session_id):
     correct_count = sum(1 for r in responses if r.is_correct)
     total_time_ms = sum(r.reaction_time_ms for r in responses)
 
-    accuracy = (correct_count / total_questions) * 100 if total_questions > 0 else 0
+    accuracy = (correct_count / total_questions) if total_questions > 0 else 0
     avg_time_ms = total_time_ms / total_questions if total_questions > 0 else 0
     
     # 更新並儲存最終結果到 TestSession
     try:
-        session.overall_accuracy = accuracy
+        session.overall_accuracy = round(accuracy, 4)  # 保留兩位小數
         session.average_reaction_time = avg_time_ms
         session.finished_at = datetime.utcnow()
         db.session.commit()
@@ -137,6 +137,6 @@ def get_quiz_result(session_id):
         return jsonify({"error": "更新測驗結果失敗", "message": str(e)}), 500
         
     return jsonify({
-        "accuracy": f"{accuracy:.2f}%",
+        "accuracy": f"{accuracy * 100:.2f}%",
         "average_reaction_time": f"{avg_time_ms / 1000:.2f}"
     })
