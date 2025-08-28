@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
-import { imageCache } from './InstructionPage';
+import { imageCache } from './UserInfoPage';
 
 // const API_BASE_URL = 'http://localhost'; // 本地開發環境
 const API_BASE_URL = 'http://54.174.181.192';

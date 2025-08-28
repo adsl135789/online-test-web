@@ -11,6 +11,20 @@ const API_BASE_URL = 'http://54.174.181.192';
 // 圖片快取對象
 export const imageCache = {};
 
+// 清理圖片快取的函式
+export const clearImageCache = () => {
+  Object.keys(imageCache).forEach(key => {
+    delete imageCache[key];
+  });
+};
+
+// 清理問題座標的函式
+export const clearQuestionCoordinates = (setQuestionCoordinates) => {
+  if (setQuestionCoordinates) {
+    setQuestionCoordinates({});
+  }
+};
+
 export default function UserInfoPage({ setSessionData }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -27,10 +41,44 @@ export default function UserInfoPage({ setSessionData }) {
     museum_experience: '',
   });
   const [status, setStatus] = useState({ loading: false, error: null });
+  const [currentStage, setCurrentStage] = useState(1);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questionCoordinates, setQuestionCoordinates] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // 預載入圖片的函式
+  const preloadImage = async (imagePath) => {
+    if (!imagePath) return null;
+    
+    // 檢查快取中是否已有此圖片
+    if (imageCache[imagePath]) {
+      return imageCache[imagePath];
+    }
+
+    try {
+      const imageUrl = `${API_BASE_URL}:5000/static/${imagePath}`;
+      
+      // 創建圖片物件進行預載入
+      const img = new Image();
+      img.src = imageUrl;
+      
+      // 等待圖片載入完成
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+      
+      // 將圖片URL存入快取
+      imageCache[imagePath] = imageUrl;
+      return imageUrl;
+    } catch (error) {
+      console.error('圖片預載入失敗:', error);
+      return null;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -49,6 +97,32 @@ export default function UserInfoPage({ setSessionData }) {
     try {
       const response = await axios.post(`${API_BASE_URL}:5000/api/quiz/start`, formData);
       const sessionData = response.data;
+      
+      // 在跳轉前清理快取和座標
+      clearImageCache();
+      clearQuestionCoordinates(setQuestionCoordinates);
+      
+      // 初始化狀態
+      setCurrentStage(1);
+      setCurrentQuestionIndex(0);
+      
+      // 預載入圖片並設置座標
+      if (sessionData.question_image) {
+        await preloadImage(sessionData.question_image);
+      }
+      
+      // 存儲物件座標資訊
+      if (sessionData.square_x !== undefined) {
+        const coordinates = {
+          square_x: sessionData.square_x,
+          square_y: sessionData.square_y,
+          triangle_x: sessionData.triangle_x,
+          triangle_y: sessionData.triangle_y,
+          circle_x: sessionData.circle_x,
+          circle_y: sessionData.circle_y
+        };
+        setQuestionCoordinates(coordinates);
+      }
       
       setSessionData(sessionData);
       navigate('/instruction'); // 修改跳轉目標為instruction頁面

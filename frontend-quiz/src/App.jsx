@@ -5,12 +5,23 @@ import UserInfoPage from './components/UserInfoPage';
 import InstructionPage from './components/InstructionPage';
 import QuizPage from './components/QuizPage';
 import ResultPage from './components/ResultPage';
+import { clearImageCache, clearQuestionCoordinates } from './components/UserInfoPage';
 
 export default function App() {
   const [sessionData, setSessionData] = useState(null);
   const [currentStage, setCurrentStage] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionCoordinates, setQuestionCoordinates] = useState({});
+
+  // 如果需要，可以在適當的時機調用清理函式
+  // 例如在重新開始測驗時
+  const resetApp = () => {
+    clearImageCache();
+    clearQuestionCoordinates(setQuestionCoordinates);
+    setSessionData(null);
+    setCurrentStage(1);
+    setCurrentQuestionIndex(0);
+  };
 
   return (
     <Routes>
