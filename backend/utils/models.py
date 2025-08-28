@@ -48,7 +48,7 @@ class TestSession(db.Model):
     tester_drawing_frequency = db.Column(db.String(20), nullable=False)  # 繪畫頻率
     tester_museum_experience = db.Column(db.String(30), nullable=False)  # 博物館參觀經驗
     
-    finished_at = db.Column(db.DateTime)
+    finished_at = db.Column(db.DateTime(timezone=True))
     overall_accuracy = db.Column(db.Float)
     average_reaction_time = db.Column(db.Integer)
     question_order = db.Column(JSONB) 
